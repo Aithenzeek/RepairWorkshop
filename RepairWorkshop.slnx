@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="RepairWorkshop.API/RepairWorkshop.API.csproj" />
+  <Project Path="RepairWorkshop.BLL/RepairWorkshop.BLL.csproj" />
+  <Project Path="RepairWorkShop.DAL/RepairWorkShop.DAL.csproj" />
+</Solution>
