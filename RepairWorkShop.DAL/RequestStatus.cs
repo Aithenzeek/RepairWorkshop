@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RepairWorkShop.DAL
 {
-    internal enum RequestStatus
+    public enum RequestStatus
     {
         New,
         WaitingForApproval,

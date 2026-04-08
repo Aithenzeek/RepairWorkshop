@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RepairWorkShop.DAL
 {
-    internal enum ServiceTaskStatus
+    public enum ServiceTaskStatus
     {
         New,
         Assigned,

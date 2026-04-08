@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RepairWorkShop.DAL
 {
-    internal class AppDbContext : DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<CustomerRequest> Requests { get; set; }
         public DbSet<RepairItem> RepairItems { get; set; }
@@ -24,6 +24,27 @@ namespace RepairWorkShop.DAL
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite($"Data Source={DbPath}");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<CustomerRequest>()
+                .HasMany(e => e.RepairItems)
+                .WithOne(e => e.CustomerRequest)
+                .HasForeignKey(e => e.CustomerRequestId)
+                .IsRequired();
+
+            modelBuilder.Entity<RepairItem>()
+                .HasMany(e => e.ServiceTasks)
+                .WithOne(e => e.RepairItem)
+                .HasForeignKey(e => e.RepairItemId)
+                .IsRequired();
+
+            modelBuilder.Entity<ServiceTask>()
+                .HasOne(e => e.Service)
+                .WithMany()
+                .HasForeignKey(e => e.ServiceId)
+                .IsRequired();
         }
     }
 }
