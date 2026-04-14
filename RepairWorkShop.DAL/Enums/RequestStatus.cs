@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RepairWorkShop.DAL
+﻿namespace RepairWorkShop.DAL.Enums
 {
     public enum RequestStatus
     {
+        Draft,
         New,
         WaitingForApproval,
+        Approved,
         InProgress,
+        OnHold,
         Completed,
         Cancelled,
-        AwaitingPickUp,
+        WaitingForPickUp,
         PickedUp
     }
 }

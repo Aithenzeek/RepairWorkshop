@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using RepairWorkShop.DAL.Entities;
 
 namespace RepairWorkShop.DAL
 {
@@ -13,7 +11,8 @@ namespace RepairWorkShop.DAL
         public DbSet<Service> Services { get; set; }
         public string DbPath { get; }
 
-        public AppDbContext()
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+           : base(options)
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RepairWorkShop.DAL\RepairWorkShop.DAL.csproj" />
+    <ProjectReference Include="..\RepairWorkshop.BLL\RepairWorkshop.BLL.csproj" />
   </ItemGroup>
 
 </Project>
