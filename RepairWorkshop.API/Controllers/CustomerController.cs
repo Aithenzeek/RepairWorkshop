@@ -16,7 +16,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-all-customers")]
-        public IActionResult GetCustomers()
+        public async Task<IActionResult> GetCustomers()
         {
             var customers = _service.GetAllCustomers();
 
@@ -24,7 +24,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-one/{phone}")]
-        public IActionResult GetCustomerByPhone(string phone)
+        public async Task<IActionResult> GetCustomerByPhone(string phone)
         {
             var customer = _service.GetCustomerByPhone(phone);
 
@@ -32,7 +32,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPost("create-customer")]
-        public IActionResult CreateCustomer([FromBody] CreateCustomerDto dto)
+        public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
         {
             var customer = _service.CreateCustomer(dto);
 
@@ -40,7 +40,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpDelete("delete/{id}")]
-        public IActionResult DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
             _service.DeleteCustomer(id);
 
@@ -48,7 +48,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-customer/{number}")]
-        public IActionResult EditRequest(string number, [FromBody] CreateCustomerDto dto)
+        public async Task<IActionResult> EditRequest(string number, [FromBody] CreateCustomerDto dto)
         {
             var request = _service.EditCustomer(number, dto);
 

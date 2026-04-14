@@ -11,7 +11,7 @@ namespace RepairWorkshop.API.Controllers
     ) : ControllerBase
     {
         [HttpGet("get-all-requests")]
-        public IActionResult GetRequests()
+        public async Task<IActionResult> GetRequests()
         {
             var requests = service.GetAllRequests();
 
@@ -19,7 +19,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-one/{id}")]
-        public IActionResult GetRequest(int id)
+        public async Task<IActionResult> GetRequest(int id)
         {
             var request = service.GetRequestById(id);
 
@@ -27,15 +27,15 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPost("create-request")]
-        public IActionResult CreateRequest([FromBody] int id)
+        public async Task<IActionResult> CreateRequest([FromBody] int id)
         {
-            var request = service.CreateRequest(id);
+            var request = await service.CreateRequest(id);
 
             return Ok(request);
         }
 
         [HttpDelete("delete-request{id}")]
-        public IActionResult DeleteRequest([FromRoute] int id)
+        public async Task<IActionResult> DeleteRequest([FromRoute] int id)
         {
             service.DeleteRequest(id);
 
@@ -43,7 +43,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("complete-request")]
-        public IActionResult CompleteRequest([FromBody] int id)
+        public async Task<IActionResult> CompleteRequest([FromBody] int id)
         {
             var request = service.CompleteRequest(id);
 
@@ -51,7 +51,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("cancel-request")]
-        public IActionResult CancellRequest([FromBody] int id)
+        public async Task<IActionResult> CancellRequest([FromBody] int id)
         {
             var request = service.CancelRequest(id);
 
@@ -59,7 +59,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("approve-request")]
-        public IActionResult ApproveRequest([FromBody] int id)
+        public async Task<IActionResult> ApproveRequest([FromBody] int id)
         {
             var request = service.ApproveRequest(id);
 
@@ -67,7 +67,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("allow-pickup")]
-        public IActionResult AllowPickUp([FromBody] int id)
+        public async Task<IActionResult> AllowPickUp([FromBody] int id)
         {
             var request = service.AllowPickUp(id);
 
@@ -75,7 +75,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-request/{id}")]
-        public IActionResult EditRequest(int id, [FromBody] CreateCustomerRequestDto dto)
+        public async Task<IActionResult> EditRequest(int id, [FromBody] CreateCustomerRequestDto dto)
         {
             var request = service.EditRequest(id, dto);
 

@@ -50,7 +50,7 @@ namespace RepairWorkShop.DAL
                 .HasOne(e => e.Customer)
                 .WithMany()
                 .HasForeignKey(e => e.CustomerId)
-                .IsRequired();
+                .IsRequired(false);
         }
     }
 }

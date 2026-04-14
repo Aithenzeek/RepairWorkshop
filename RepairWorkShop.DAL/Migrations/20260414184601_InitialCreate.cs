@@ -12,21 +12,17 @@ namespace RepairWorkShop.DAL.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Requests",
+                name: "Customers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ManagerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    TotalCost = table.Column<double>(type: "REAL", nullable: false)
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Phone = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.PrimaryKey("PK_Customers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -44,11 +40,35 @@ namespace RepairWorkShop.DAL.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Requests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: true),
+                    ManagerId = table.Column<int>(type: "INTEGER", nullable: true),
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    TotalCost = table.Column<double>(type: "REAL", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Requests_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RepairItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    CustomerRequestId = table.Column<int>(type: "INTEGER", nullable: false),
                     Model = table.Column<string>(type: "TEXT", nullable: false),
                     SerialNumber = table.Column<string>(type: "TEXT", nullable: false),
                     ProblemDescription = table.Column<string>(type: "TEXT", nullable: false),
@@ -56,8 +76,7 @@ namespace RepairWorkShop.DAL.Migrations
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
                     ServiceCost = table.Column<double>(type: "REAL", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CustomerRequestId = table.Column<int>(type: "INTEGER", nullable: true)
+                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,7 +85,8 @@ namespace RepairWorkShop.DAL.Migrations
                         name: "FK_RepairItems_Requests_CustomerRequestId",
                         column: x => x.CustomerRequestId,
                         principalTable: "Requests",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,8 +97,8 @@ namespace RepairWorkShop.DAL.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     RepairItemId = table.Column<int>(type: "INTEGER", nullable: false),
                     WorkerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Cost = table.Column<double>(type: "REAL", nullable: false),
                     ServiceId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Cost = table.Column<double>(type: "REAL", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
@@ -106,6 +126,11 @@ namespace RepairWorkShop.DAL.Migrations
                 column: "CustomerRequestId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Requests_CustomerId",
+                table: "Requests",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceTasks_RepairItemId",
                 table: "ServiceTasks",
                 column: "RepairItemId");
@@ -130,6 +155,9 @@ namespace RepairWorkShop.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "Requests");
+
+            migrationBuilder.DropTable(
+                name: "Customers");
         }
     }
 }

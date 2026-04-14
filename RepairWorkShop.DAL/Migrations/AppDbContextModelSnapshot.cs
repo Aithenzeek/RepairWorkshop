@@ -45,10 +45,10 @@ namespace RepairWorkShop.DAL.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CustomerId")
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ManagerId")
+                    b.Property<int?>("ManagerId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("StartedAt")
@@ -169,9 +169,7 @@ namespace RepairWorkShop.DAL.Migrations
                 {
                     b.HasOne("RepairWorkShop.DAL.Entities.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
 
                     b.Navigation("Customer");
                 });
