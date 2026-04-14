@@ -1,7 +1,9 @@
-﻿using RepairWorkshop.BLL.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using RepairWorkshop.BLL.DTOs;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
+using System.ComponentModel;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -14,129 +16,139 @@ namespace RepairWorkshop.BLL.Services
             _context = context;
         }
 
-        public RepairItem CreateRepairItem(int requestId)
+        public async Task<RepairItem> CreateRepairItem(int requestId)
         {
             var repairItem = new RepairItem();
 
             repairItem.CustomerRequestId = requestId;
             repairItem.Status = RepairItemStatus.Draft;
 
-            _context.RepairItems.Add(repairItem);
-            _context.SaveChanges();
+            await _context.RepairItems.AddAsync(repairItem);
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public void DeleteRepairItem(int id)
+        public async void DeleteRepairItem(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             _context.RepairItems.Remove(repairItem);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public RepairItem ApproveRepairItem(int id)
+        public async Task<RepairItem> ApproveRepairItem(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.OnHold;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem CompleteRepairItem(int id)
+        public async Task<RepairItem> CompleteRepairItem(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.Completed;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem CancelRepairItem(int id)
+        public async Task<RepairItem> CancelRepairItem(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.Cancelled;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem AllowPickUpRepairItem(int id)
+        public async Task<RepairItem> AllowPickUpRepairItem(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.WaitingForPickUp;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem WaitForRepairItemParts(int id)
+        public async Task<RepairItem> WaitForRepairItemParts(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.WaitingForParts;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem SetOnHoldRepairItemWork(int id)
+        public async Task<RepairItem> SetOnHoldRepairItemWork(int id)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Status = RepairItemStatus.OnHold;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
         }
 
-        public RepairItem EditRepairItem(int id, CreateRepairItemDto dto)
+        public async Task<RepairItem> EditRepairItem(int id, CreateRepairItemDto dto)
         {
-            var repairItem = _context.RepairItems.Find(id);
+            var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new Exception("Repair item not found");
+                throw new DirectoryNotFoundException("Repair item not found");
 
             repairItem.Model = dto.Model;
             repairItem.SerialNumber = dto.SerialNumber;
             repairItem.ProblemDescription = dto.ProblemDescription;
             repairItem.Notes = dto.Notes;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return repairItem;
+        }
+
+        public async Task<RepairItem> GetRepairItemById(int id)
+        {
+            return await _context.RepairItems.FindAsync(id);
+        }
+
+        public async Task<List<RepairItem>> GetAllRepairItems()
+        {
+            return await _context.RepairItems.ToListAsync();
         }
     }
 }

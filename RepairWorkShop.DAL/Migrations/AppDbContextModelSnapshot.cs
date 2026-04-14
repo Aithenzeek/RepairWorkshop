@@ -17,7 +17,26 @@ namespace RepairWorkShop.DAL.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
-            modelBuilder.Entity("RepairWorkShop.DAL.CustomerRequest", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.CustomerRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,7 +51,7 @@ namespace RepairWorkShop.DAL.Migrations
                     b.Property<int>("ManagerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("StartedAt")
+                    b.Property<DateTime?>("StartedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
@@ -43,10 +62,12 @@ namespace RepairWorkShop.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
                     b.ToTable("Requests");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.RepairItem", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.RepairItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -90,7 +111,7 @@ namespace RepairWorkShop.DAL.Migrations
                     b.ToTable("RepairItems");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.Service", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.Service", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,7 +129,7 @@ namespace RepairWorkShop.DAL.Migrations
                     b.ToTable("Services");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.ServiceTask", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.ServiceTask", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -144,9 +165,20 @@ namespace RepairWorkShop.DAL.Migrations
                     b.ToTable("ServiceTasks");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.RepairItem", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.CustomerRequest", b =>
                 {
-                    b.HasOne("RepairWorkShop.DAL.CustomerRequest", "CustomerRequest")
+                    b.HasOne("RepairWorkShop.DAL.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.RepairItem", b =>
+                {
+                    b.HasOne("RepairWorkShop.DAL.Entities.CustomerRequest", "CustomerRequest")
                         .WithMany("RepairItems")
                         .HasForeignKey("CustomerRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -155,15 +187,15 @@ namespace RepairWorkShop.DAL.Migrations
                     b.Navigation("CustomerRequest");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.ServiceTask", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.ServiceTask", b =>
                 {
-                    b.HasOne("RepairWorkShop.DAL.RepairItem", "RepairItem")
+                    b.HasOne("RepairWorkShop.DAL.Entities.RepairItem", "RepairItem")
                         .WithMany("ServiceTasks")
                         .HasForeignKey("RepairItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RepairWorkShop.DAL.Service", "Service")
+                    b.HasOne("RepairWorkShop.DAL.Entities.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -174,12 +206,12 @@ namespace RepairWorkShop.DAL.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.CustomerRequest", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.CustomerRequest", b =>
                 {
                     b.Navigation("RepairItems");
                 });
 
-            modelBuilder.Entity("RepairWorkShop.DAL.RepairItem", b =>
+            modelBuilder.Entity("RepairWorkShop.DAL.Entities.RepairItem", b =>
                 {
                     b.Navigation("ServiceTasks");
                 });

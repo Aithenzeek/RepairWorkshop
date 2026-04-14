@@ -1,4 +1,5 @@
-﻿using RepairWorkshop.BLL.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using RepairWorkshop.BLL.DTOs;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
@@ -14,7 +15,7 @@ namespace RepairWorkshop.BLL.Services
             _context = context;
         }
 
-        public ServiceTask CreateServiceTask(int repairItemId, CreateServiceTaskDto dto)
+        public async Task<ServiceTask> CreateServiceTask(int repairItemId, CreateServiceTaskDto dto)
         {
             var serviceTask = new ServiceTask();
 
@@ -23,94 +24,104 @@ namespace RepairWorkshop.BLL.Services
             serviceTask.ServiceId = dto.ServiceId;
             serviceTask.Status = ServiceTaskStatus.New;
 
-            _context.ServiceTasks.Add(serviceTask);
-            _context.SaveChanges();
+            await _context.ServiceTasks.AddAsync(serviceTask);
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask DeleteServiceTask(int id)
+        public async Task<ServiceTask> DeleteServiceTask(int id)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task not found");
 
             _context.ServiceTasks.Remove(serviceTask);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask CompleteServiceTask(int id)
+        public async Task<ServiceTask> CompleteServiceTask(int id)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task not found");
 
             serviceTask.Status = ServiceTaskStatus.Completed;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask CancelServiceTask(int id)
+        public async Task<ServiceTask> CancelServiceTask(int id)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task not found");
 
             serviceTask.Status = ServiceTaskStatus.Cancelled;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask SetOnHoldServiceTask(int id)
+        public async Task<ServiceTask> SetOnHoldServiceTask(int id)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task not found");
 
             serviceTask.Status = ServiceTaskStatus.OnHold;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask WaitForServiceTaskParts(int id)
+        public async Task<ServiceTask> WaitForServiceTaskParts(int id)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task not found");
 
             serviceTask.Status = ServiceTaskStatus.WaitingForParts;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public ServiceTask EditServiceTask(int id, CreateServiceTaskDto dto)
+        public async Task<ServiceTask> EditServiceTask(int id, CreateServiceTaskDto dto)
         {
-            var serviceTask = _context.ServiceTasks.Find(id);
+            var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new Exception("Service task not found");
+                throw new DirectoryNotFoundException("Service task found");
 
             serviceTask.WorkerId = dto.WorkerId;
             serviceTask.ServiceId = dto.ServiceId;
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return serviceTask;
+        }
+
+        public async Task<ServiceTask> GetServiceTaskById(int id)
+        {
+            return await _context.ServiceTasks.FindAsync(id);
+        }
+
+        public async Task<List<ServiceTask>> GetAllServiceTasks()
+        {
+            return await _context.ServiceTasks.ToListAsync();
         }
     }
 }

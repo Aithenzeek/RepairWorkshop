@@ -9,6 +9,7 @@ namespace RepairWorkShop.DAL
         public DbSet<RepairItem> RepairItems { get; set; }
         public DbSet<ServiceTask> ServiceTasks { get; set; }
         public DbSet<Service> Services { get; set; }
+        public DbSet<Customer> Customers { get; set; }
         public string DbPath { get; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -43,6 +44,12 @@ namespace RepairWorkShop.DAL
                 .HasOne(e => e.Service)
                 .WithMany()
                 .HasForeignKey(e => e.ServiceId)
+                .IsRequired();
+
+            modelBuilder.Entity<CustomerRequest>()
+                .HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
                 .IsRequired();
         }
     }
