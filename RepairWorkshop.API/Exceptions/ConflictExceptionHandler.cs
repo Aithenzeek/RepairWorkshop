@@ -4,11 +4,11 @@ using RepairWorkshop.BLL.Exceptions;
 
 namespace RepairWorkshop.API.Exceptions
 {
-    public class NotFoundExceptionHandler : IExceptionHandler
+    public class ConflictExceptionHandler : IExceptionHandler
     {
-        private readonly ILogger<NotFoundExceptionHandler> _logger;
+        private readonly ILogger<ConflictExceptionHandler> _logger;
 
-        public NotFoundExceptionHandler(ILogger<NotFoundExceptionHandler> logger)
+        public ConflictExceptionHandler(ILogger<ConflictExceptionHandler> logger)
         {
             _logger = logger;
         }
@@ -18,21 +18,21 @@ namespace RepairWorkshop.API.Exceptions
             Exception exception,
             CancellationToken cancellationToken)
         {
-            if (exception is not NotFoundException notFoundException)
+            if (exception is not ConflictException conflictException)
             {
                 return false;
             }
 
             _logger.LogError(
-                notFoundException,
+                conflictException,
                 "Exception occurred: {Message}",
-                notFoundException.Message);
+                conflictException.Message);
 
             var problemDetails = new ProblemDetails
             {
-                Status = StatusCodes.Status404NotFound,
-                Title = "Not Found",
-                Detail = notFoundException.Message
+                Status = StatusCodes.Status409Conflict,
+                Title = "Cannot delete entity with dependencies",
+                Detail = conflictException.Message
             };
 
             httpContext.Response.StatusCode = problemDetails.Status.Value;

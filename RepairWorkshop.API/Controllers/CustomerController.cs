@@ -48,11 +48,11 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-customer/{number}")]
-        public async Task<IActionResult> EditRequest(string number, [FromBody] CreateCustomerDto dto)
+        public async Task<IActionResult> EditCustomer(string number, [FromBody] CreateCustomerDto dto)
         {
-            var request = _service.EditCustomer(number, dto);
+            var customer = _service.EditCustomer(number, dto);
 
-            return Ok(request);
+            return Ok();
         }
     }
 }

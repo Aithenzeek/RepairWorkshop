@@ -124,7 +124,7 @@ namespace RepairWorkshop.BLL.Services
             return repairItem;
         }
 
-        public async Task<RepairItem> EditRepairItem(int id, CreateRepairItemDto dto)
+        public async Task<RepairItem> EditRepairItem(int id, EditRepairItemDto dto)
         {
             var repairItem = await _context.RepairItems.FindAsync(id);
 

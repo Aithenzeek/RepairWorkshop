@@ -1,6 +1,6 @@
 ﻿namespace RepairWorkshop.BLL.DTOs
 {
-    public class CreateCustomerRequestDto
+    public class EditCustomerRequestDto
     {
         public int CustomerId { get; set; }
     }

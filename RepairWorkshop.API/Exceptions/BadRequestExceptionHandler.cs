@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using RepairWorkshop.BLL.Exceptions;
 
 namespace RepairWorkshop.API.Exceptions
 {

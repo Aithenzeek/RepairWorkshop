@@ -1,4 +1,4 @@
-﻿namespace RepairWorkshop.API.Exceptions
+﻿namespace RepairWorkshop.BLL.Exceptions
 {
     public class BadRequestException : Exception
     {

@@ -3,6 +3,7 @@ using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
+using System.Numerics;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -17,6 +18,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Customer> CreateCustomer(CreateCustomerDto dto)
         {
+            //if (dto.Phone.Length != 10 || dto.Phone.Any(char.IsLetter))
+            //    throw new Exception("Phone not valid");
+
+            CheckPhone(dto);
+
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
+
+            if (existingCustomer != null)
+                return existingCustomer;
+
             var customer = new Customer
             {
                 Name = dto.Name,
@@ -45,7 +56,11 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Customer> EditCustomer(string phone, CreateCustomerDto dto)
         {
-            var customer = await _context.Customers.FindAsync(phone);
+            //var customer = await _context.Customers.FindAsync(phone);
+
+            CheckPhone(dto);
+
+            var customer = await GetCustomerByPhone(phone);
 
             if (customer == null)
                 throw new DirectoryNotFoundException("Customer not found");
@@ -66,6 +81,12 @@ namespace RepairWorkshop.BLL.Services
         public async Task<List<Customer>> GetAllCustomers()
         {
             return await _context.Customers.ToListAsync();
+        }
+
+        public async void CheckPhone(CreateCustomerDto dto)
+        {
+            if (dto.Phone.Length != 10 || dto.Phone.Any(char.IsLetter))
+                throw new Exception("Phone not valid");
         }
     }
 }

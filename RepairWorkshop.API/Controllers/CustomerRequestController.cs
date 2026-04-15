@@ -75,7 +75,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-request/{id}")]
-        public async Task<IActionResult> EditRequest(int id, [FromBody] CreateCustomerRequestDto dto)
+        public async Task<IActionResult> EditRequest(int id, [FromBody] EditCustomerRequestDto dto)
         {
             var request = service.EditRequest(id, dto);
 

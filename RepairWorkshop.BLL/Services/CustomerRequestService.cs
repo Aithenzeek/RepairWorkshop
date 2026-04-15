@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.BLL.DTOs;
+using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
@@ -32,7 +33,10 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
+
+            if (request.RepairItems.Any())
+                throw new ConflictException("Cannot delete object with subobjects");
 
             context.Requests.Remove(request);
 
@@ -44,7 +48,7 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Status = RequestStatus.Cancelled;
 
@@ -58,7 +62,7 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Status = RequestStatus.Completed;
 
@@ -72,7 +76,7 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Status = RequestStatus.Approved;
 
@@ -86,7 +90,7 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Status = RequestStatus.WaitingForPickUp;
 
@@ -99,18 +103,18 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.Requests.FindAsync(id);
         }
-            
+
         public async Task<List<CustomerRequest>> GetAllRequests()
         {
             return await context.Requests.ToListAsync();
         }
 
-        public async Task<CustomerRequest> EditRequest(int id, CreateCustomerRequestDto dto)
+        public async Task<CustomerRequest> EditRequest(int id, EditCustomerRequestDto dto)
         {
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.CustomerId = dto.CustomerId;
 
@@ -124,7 +128,7 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
-                throw new DirectoryNotFoundException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.CustomerId = customerId;
 
