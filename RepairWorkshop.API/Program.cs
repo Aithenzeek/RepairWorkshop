@@ -14,6 +14,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICustomerRequestService, CustomerRequestService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IRepairItemService, RepairItemService>();
+builder.Services.AddScoped<IServiceTaskService, ServiceTaskService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=app.db"));

@@ -1,8 +1,8 @@
 ﻿namespace RepairWorkshop.BLL.DTOs
 {
-    public record CreateCustomerDto
+    public record EditServiceDto
     (
         string Name,
-        string Phone
+        double Price
     );
 }

@@ -27,9 +27,9 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPost("create-request")]
-        public async Task<IActionResult> CreateRequest([FromBody] int id)
+        public async Task<IActionResult> CreateRequest([FromBody] CreateCustomerRequestDto dto)
         {
-            var request = await service.CreateRequest(id);
+            var request = await service.CreateRequest(dto);
 
             return Ok(request);
         }
@@ -78,6 +78,14 @@ namespace RepairWorkshop.API.Controllers
         public async Task<IActionResult> EditRequest(int id, [FromBody] EditCustomerRequestDto dto)
         {
             var request = service.EditRequest(id, dto);
+
+            return Ok(request);
+        }
+
+        [HttpPatch("start-request/{id}")]
+        public async Task<IActionResult> StartRequest([FromBody] int id)
+        {
+            var request = service.StartRequest(id);
 
             return Ok(request);
         }

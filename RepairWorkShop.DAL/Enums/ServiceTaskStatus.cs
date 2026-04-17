@@ -2,6 +2,7 @@
 {
     public enum ServiceTaskStatus
     {
+        Draft,
         New,
         Assigned,
         InProgress,

@@ -16,7 +16,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-all-customers")]
-        public async Task<IActionResult> GetCustomers()
+        public async Task<IActionResult> GetAllCustomers()
         {
             var customers = _service.GetAllCustomers();
 

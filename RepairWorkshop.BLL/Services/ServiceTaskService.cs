@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.BLL.DTOs;
+using RepairWorkshop.BLL.Exceptions;
+using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class ServiceTaskService
+    public class ServiceTaskService : IServiceTaskService
     {
         private AppDbContext _context;
 
@@ -17,12 +19,21 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ServiceTask> CreateServiceTask(int repairItemId, CreateServiceTaskDto dto)
         {
-            var serviceTask = new ServiceTask();
+            var existingServiceTask = await _context.ServiceTasks.FindAsync(dto.ServiceId);
 
-            serviceTask.RepairItemId = repairItemId;
-            serviceTask.WorkerId = dto.WorkerId;
-            serviceTask.ServiceId = dto.ServiceId;
-            serviceTask.Status = ServiceTaskStatus.New;
+            if(existingServiceTask != null && existingServiceTask.RepairItemId == repairItemId)
+            {
+                throw new ConflictException("Task with same service exists");
+            }    
+
+
+            var serviceTask = new ServiceTask
+            {
+                RepairItemId = repairItemId,
+                WorkerId = dto.WorkerId,
+                ServiceId = dto.ServiceId,
+                Status = ServiceTaskStatus.New
+            };
 
             await _context.ServiceTasks.AddAsync(serviceTask);
             await _context.SaveChangesAsync();
@@ -35,7 +46,10 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task not found");
+                throw new NotFoundException("Service task not found");
+
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Only draft can be deleted");
 
             _context.ServiceTasks.Remove(serviceTask);
             await _context.SaveChangesAsync();
@@ -49,6 +63,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (serviceTask == null)
                 throw new DirectoryNotFoundException("Service task not found");
+
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             serviceTask.Status = ServiceTaskStatus.Completed;
 
@@ -64,6 +81,9 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new DirectoryNotFoundException("Service task not found");
 
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
+
             serviceTask.Status = ServiceTaskStatus.Cancelled;
 
             await _context.SaveChangesAsync();
@@ -78,6 +98,9 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new DirectoryNotFoundException("Service task not found");
 
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
+
             serviceTask.Status = ServiceTaskStatus.OnHold;
 
             await _context.SaveChangesAsync();
@@ -91,6 +114,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (serviceTask == null)
                 throw new DirectoryNotFoundException("Service task not found");
+
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             serviceTask.Status = ServiceTaskStatus.WaitingForParts;
 
@@ -123,5 +149,10 @@ namespace RepairWorkshop.BLL.Services
         {
             return await _context.ServiceTasks.ToListAsync();
         }
+
+        //public async Task<ServiceTask> AssingTechnician()
+        //{
+
+        //}
     }
 }

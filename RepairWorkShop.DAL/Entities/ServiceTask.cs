@@ -8,7 +8,7 @@ namespace RepairWorkShop.DAL.Entities
         public int RepairItemId { get; set; }
         public int WorkerId { get; set; }
         public int ServiceId { get; set; }
-        public double Cost { get; set; }
+        public double? Cost { get; set; }
         public ServiceTaskStatus Status { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }

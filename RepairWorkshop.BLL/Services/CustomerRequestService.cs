@@ -13,11 +13,12 @@ namespace RepairWorkshop.BLL.Services
         AppDbContext context
     ) : ICustomerRequestService
     {
-        public async Task<CustomerRequest> CreateRequest(int managerId)
+        public async Task<CustomerRequest> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto)
         {
             var customerRequest = new CustomerRequest
             {
-                ManagerId = managerId,
+                CustomerId = dto.CustomerId,
+                ManagerId = dto.ManagerId,
                 Status = RequestStatus.Draft
             };
 
@@ -35,8 +36,11 @@ namespace RepairWorkshop.BLL.Services
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            if (request.RepairItems.Any())
-                throw new ConflictException("Cannot delete object with subobjects");
+            if (request.Status != RequestStatus.Draft)
+                throw new NotFoundException("Only draft can be deleted");
+
+            //if (request.RepairItems.Any())
+            //    throw new ConflictException("Cannot delete object with subobjects");
 
             context.Requests.Remove(request);
 
@@ -47,10 +51,22 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Request must be new or highter(not draft)");
+
             if (request == null)
                 throw new NotFoundException("Request not found");
 
+            // ТРЕБА ЗРОБИТИ ПО-ІНШОМУ
             request.Status = RequestStatus.Cancelled;
+
+            foreach (var item in request.RepairItems)
+            {
+                item.Status = RepairItemStatus.Cancelled;
+
+                foreach (var task in item.ServiceTasks)
+                    task.Status = ServiceTaskStatus.Cancelled;
+            }
 
             await context.SaveChangesAsync();
 
@@ -60,6 +76,9 @@ namespace RepairWorkshop.BLL.Services
         public async Task<CustomerRequest> CompleteRequest(int id)
         {
             var request = await context.Requests.FindAsync(id);
+
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             if (request == null)
                 throw new NotFoundException("Request not found");
@@ -75,6 +94,9 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
+
             if (request == null)
                 throw new NotFoundException("Request not found");
 
@@ -88,6 +110,9 @@ namespace RepairWorkshop.BLL.Services
         public async Task<CustomerRequest> AllowPickUp(int id)
         {
             var request = await context.Requests.FindAsync(id);
+
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             if (request == null)
                 throw new NotFoundException("Request not found");
@@ -123,7 +148,7 @@ namespace RepairWorkshop.BLL.Services
             return request;
         }
 
-        public async Task<CustomerRequest> AssingCutomer(int id, int customerId)
+        public async Task<CustomerRequest> AssingCustomer(int id, int customerId)
         {
             var request = await context.Requests.FindAsync(id);
 
@@ -136,5 +161,39 @@ namespace RepairWorkshop.BLL.Services
 
             return request;
         }
+
+        public async Task<CustomerRequest> StartRequest(int id)
+        {
+            var request = await context.Requests.FindAsync(id);
+
+            if (request == null)
+                throw new NotFoundException("Request not found");
+
+            if (request.Status != RequestStatus.Draft)
+                throw new ConflictException("Allowed only in draft");
+
+            if(request.RepairItems.Any() == false)
+                throw new ConflictException("No items in request");
+
+            request.Status = RequestStatus.New;
+
+            context.SaveChangesAsync();
+
+            return request;
+        }
+        //public async Task<CustomerRequest> AddItem(int id)
+        //{
+        //    var request = await context.Requests.FindAsync(id);
+
+        //    if (request == null)
+        //        throw new NotFoundException("Request not found");
+
+        //    if (request.Status == RequestStatus.Draft)
+        //        throw new ConflictException("Not allowed in draft");
+
+        //    var repairItem = await context.RepairItems.FindAsync(id);
+
+        //    request.RepairItems.Add
+        //}
     }
 }

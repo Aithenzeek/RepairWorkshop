@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.BLL.DTOs;
+using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
-using System.Numerics;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -18,12 +18,9 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Customer> CreateCustomer(CreateCustomerDto dto)
         {
-            //if (dto.Phone.Length != 10 || dto.Phone.Any(char.IsLetter))
-            //    throw new Exception("Phone not valid");
+            var phone = CheckPhone(dto.Phone);
 
-            CheckPhone(dto);
-
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
 
             if (existingCustomer != null)
                 return existingCustomer;
@@ -31,7 +28,7 @@ namespace RepairWorkshop.BLL.Services
             var customer = new Customer
             {
                 Name = dto.Name,
-                Phone = dto.Phone
+                Phone = phone
             };
 
             await _context.Customers.AddAsync(customer);
@@ -56,9 +53,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Customer> EditCustomer(string phone, CreateCustomerDto dto)
         {
-            //var customer = await _context.Customers.FindAsync(phone);
-
-            CheckPhone(dto);
+            CheckPhone(dto.Phone);
 
             var customer = await GetCustomerByPhone(phone);
 
@@ -83,10 +78,14 @@ namespace RepairWorkshop.BLL.Services
             return await _context.Customers.ToListAsync();
         }
 
-        public async void CheckPhone(CreateCustomerDto dto)
+        public String CheckPhone(string phone)
         {
-            if (dto.Phone.Length != 10 || dto.Phone.Any(char.IsLetter))
-                throw new Exception("Phone not valid");
+            var checkedPhone = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (phone.Length != 10)
+                throw new BadRequestException("Phone not valid");
+
+            return checkedPhone;
         }
     }
 }

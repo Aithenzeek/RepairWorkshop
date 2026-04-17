@@ -6,12 +6,12 @@ namespace RepairWorkShop.DAL.Entities
     {
         public int Id { get; set; }
         public int CustomerRequestId { get; set; }
-        public string Model { get; set; } = null!;
-        public string SerialNumber { get; set; } = null!;
-        public string ProblemDescription { get; set; } = null!;
-        public string Notes { get; set; } = null!;
+        public string? Model { get; set; }
+        public string? SerialNumber { get; set; }
+        public string? ProblemDescription { get; set; }
+        public string? Notes { get; set; }
         public RepairItemStatus Status { get; set; }
-        public double ServiceCost { get; set; }
+        public double? ServiceCost { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 
