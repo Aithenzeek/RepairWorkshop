@@ -26,11 +26,11 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPost("create-item")]
-        public async Task<IActionResult> CreateRepairItem([FromBody] int id)
+        public async Task<IActionResult> CreateRepairItem([FromBody] CreateRepairItemDto dto)
         {
-            var repairItem = await service.CreateRepairItem(id);
+            var repairItem = await service.CreateRepairItem(dto);
 
-            return Ok(repairItem);
+            return Ok(/*repairItem*/);
         }
 
         [HttpDelete("delete/{id}")]

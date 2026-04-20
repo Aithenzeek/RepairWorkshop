@@ -79,7 +79,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-task/{id}")]
-        public async Task<IActionResult> EditserviceTask(int id, [FromBody] CreateServiceTaskDto dto)
+        public async Task<IActionResult> EditserviceTask(int id, [FromBody] EditServiceTaskDto dto)
         {
             var serviceTask = await _service.EditServiceTask(id, dto);
 

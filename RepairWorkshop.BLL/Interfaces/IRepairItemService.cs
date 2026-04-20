@@ -5,7 +5,7 @@ namespace RepairWorkshop.BLL.Interfaces
 {
     public interface IRepairItemService
     {
-        public Task<RepairItem> CreateRepairItem(int requestId);
+        public Task<RepairItem> CreateRepairItem(CreateRepairItemDto dto);
         public Task DeleteRepairItem(int id);
         public Task<RepairItem> ApproveRepairItem(int id);
         public Task<RepairItem> CompleteRepairItem(int id);

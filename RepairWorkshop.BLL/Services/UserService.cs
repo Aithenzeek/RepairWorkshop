@@ -22,7 +22,7 @@ namespace RepairWorkshop.BLL.Services
             {
                 Name = dto.Name,
                 Phone = dto.Phone,
-                Role = dto.Role,
+                RoleId = dto.Role.Id,
             };
 
             await _context.Users.AddAsync(user);

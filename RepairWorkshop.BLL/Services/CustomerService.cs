@@ -51,7 +51,7 @@ namespace RepairWorkshop.BLL.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Customer> EditCustomer(int id, CreateCustomerDto dto)
+        public async Task<Customer> EditCustomer(int id, EditCustomerDto dto)
         {
             var formattedPhone = CheckPhone(dto.Phone);
 

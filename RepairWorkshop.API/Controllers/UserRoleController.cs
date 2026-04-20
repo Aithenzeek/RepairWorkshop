@@ -24,7 +24,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok(userRoles);
         }
 
-        [HttpGet("get-one/{phone}")]
+        [HttpGet("get-one/{id}")]
         public async Task<IActionResult> GetUserRoleById(int id)
         {
             var userRole = await _service.GetUserRoleById(id);
@@ -48,7 +48,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("edit-user-role/{number}")]
+        [HttpPatch("edit-user-role/{id}")]
         public async Task<IActionResult> EditUser(int id, [FromBody] EditUserRoleDto dto)
         {
             var userRole = await _service.EditUserRole(id, dto);

@@ -29,7 +29,7 @@ namespace RepairWorkshop.BLL.Services
                 RepairItemId = repairItemId,
                 UserId = dto.WorkerId,
                 ServiceId = dto.ServiceId,
-                Status = ServiceTaskStatus.New
+                Status = ServiceTaskStatus.Draft
             };
 
             await _context.ServiceTasks.AddAsync(serviceTask);
@@ -122,7 +122,7 @@ namespace RepairWorkshop.BLL.Services
             return serviceTask;
         }
 
-        public async Task<ServiceTask> EditServiceTask(int id, CreateServiceTaskDto dto)
+        public async Task<ServiceTask> EditServiceTask(int id, EditServiceTaskDto dto)
         {
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 

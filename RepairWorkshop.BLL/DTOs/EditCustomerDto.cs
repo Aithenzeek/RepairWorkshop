@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RepairWorkshop.BLL.DTOs
+﻿namespace RepairWorkshop.BLL.DTOs
 {
-    internal class EditCustomerDto
-    {
-    }
+    public record EditCustomerDto(
+        string Name,
+        string Phone
+    );
+
+
 }

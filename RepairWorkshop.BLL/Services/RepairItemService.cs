@@ -18,9 +18,9 @@ namespace RepairWorkshop.BLL.Services
             _context = context;
         }
 
-        public async Task<RepairItem> CreateRepairItem(int requestId)
+        public async Task<RepairItem> CreateRepairItem(CreateRepairItemDto dto)
         {
-            var request = await _context.Requests.FindAsync(requestId);
+            var request = await _context.Requests.FindAsync(dto.requestId);
 
             if (request == null)
                 throw new NotFoundException("request not found");
@@ -30,7 +30,7 @@ namespace RepairWorkshop.BLL.Services
 
             var repairItem = new RepairItem
             {
-                CustomerRequestId = requestId,
+                CustomerRequestId = dto.requestId,
                 Status = RepairItemStatus.Draft,
             };
 

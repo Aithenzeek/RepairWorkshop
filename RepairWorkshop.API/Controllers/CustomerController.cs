@@ -42,7 +42,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("edit-customer/{id}")]
-        public async Task<IActionResult> EditCustomer(int id, [FromBody] CreateCustomerDto dto)
+        public async Task<IActionResult> EditCustomer(int id, [FromBody] EditCustomerDto dto)
         {
             var customer = await service.EditCustomer(id, dto);
 

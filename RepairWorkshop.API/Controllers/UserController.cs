@@ -23,7 +23,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok(users);
         }
 
-        [HttpGet("get-one/{phone}")]
+        [HttpGet("get-one/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             var user = await _service.GetUserById(id);
@@ -47,7 +47,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("edit-user/{number}")]
+        [HttpPatch("edit-user/{id}")]
         public async Task<IActionResult> EditUser(int id, [FromBody] EditUserDto dto)
         {
             var user = await _service.EditUser(id, dto);
