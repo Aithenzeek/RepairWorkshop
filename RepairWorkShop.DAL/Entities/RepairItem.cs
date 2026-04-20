@@ -17,5 +17,13 @@ namespace RepairWorkShop.DAL.Entities
 
         public CustomerRequest CustomerRequest { get; set; } = null!;
         public List<ServiceTask> ServiceTasks { get; set; } = [];
+
+        public void Cancel()
+        {
+            Status = RepairItemStatus.Cancelled;
+
+            foreach (var task in ServiceTasks)
+                task.Cancel();
+        }
     }
 }

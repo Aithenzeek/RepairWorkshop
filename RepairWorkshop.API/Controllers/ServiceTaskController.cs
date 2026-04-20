@@ -17,7 +17,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-all-tasks")]
         public async Task<IActionResult> GetAllServiceTasks()
         {
-            var serviceTasks = _service.GetAllServiceTasks();
+            var serviceTasks = await _service.GetAllServiceTasks();
 
             return Ok(serviceTasks);
         }
@@ -35,7 +35,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await _service.CreateServiceTask(id, dto);
 
-            return Ok(/*serviceTask*/);
+            return Ok(serviceTask);
         }
 
         [HttpDelete("delete/{id}")]

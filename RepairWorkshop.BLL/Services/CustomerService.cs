@@ -43,7 +43,7 @@ namespace RepairWorkshop.BLL.Services
             var customer = await _context.Customers.FindAsync(id);
 
             if (customer == null)
-                throw new DirectoryNotFoundException("Customer not found");
+                throw new NotFoundException("Customer not found");
 
 
             _context.Customers.Remove(customer);
@@ -51,26 +51,28 @@ namespace RepairWorkshop.BLL.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Customer> EditCustomer(string phone, CreateCustomerDto dto)
+        public async Task<Customer> EditCustomer(int id, CreateCustomerDto dto)
         {
-            CheckPhone(dto.Phone);
+            var formattedPhone = CheckPhone(dto.Phone);
 
-            var customer = await GetCustomerByPhone(phone);
+            var customer = await _context.Customers.FindAsync(id);
 
             if (customer == null)
-                throw new DirectoryNotFoundException("Customer not found");
+                throw new NotFoundException("Customer not found");
 
             customer.Name = dto.Name;
-            customer.Phone = dto.Phone;
+            customer.Phone = formattedPhone;
 
             await _context.SaveChangesAsync();
 
             return customer;
         }
 
-        public async Task<Customer> GetCustomerByPhone(string phone)
+        public async Task<Customer?> GetCustomerByPhone(string phone)
         {
-            return await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
+            return await _context.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Phone == phone);
         }
 
         public async Task<List<Customer>> GetAllCustomers()
@@ -78,7 +80,7 @@ namespace RepairWorkshop.BLL.Services
             return await _context.Customers.ToListAsync();
         }
 
-        public String CheckPhone(string phone)
+        public static string CheckPhone(string phone)
         {
             var checkedPhone = new string(phone.Where(char.IsDigit).ToArray());
 

@@ -22,15 +22,12 @@ namespace RepairWorkshop.BLL.Services
             var existingServiceTask = await _context.ServiceTasks.FindAsync(dto.ServiceId);
 
             if(existingServiceTask != null && existingServiceTask.RepairItemId == repairItemId)
-            {
                 throw new ConflictException("Task with same service exists");
-            }    
-
 
             var serviceTask = new ServiceTask
             {
                 RepairItemId = repairItemId,
-                WorkerId = dto.WorkerId,
+                UserId = dto.WorkerId,
                 ServiceId = dto.ServiceId,
                 Status = ServiceTaskStatus.New
             };
@@ -62,7 +59,7 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task not found");
+                throw new NotFoundException("Service task not found");
 
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -79,7 +76,7 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task not found");
+                throw new NotFoundException("Service task not found");
 
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -96,7 +93,7 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task not found");
+                throw new NotFoundException("Service task not found");
 
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -113,7 +110,7 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task not found");
+                throw new NotFoundException("Service task not found");
 
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -130,9 +127,9 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
-                throw new DirectoryNotFoundException("Service task found");
+                throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка
 
-            serviceTask.WorkerId = dto.WorkerId;
+            serviceTask.UserId = dto.WorkerId;
             serviceTask.ServiceId = dto.ServiceId;
 
             await _context.SaveChangesAsync();

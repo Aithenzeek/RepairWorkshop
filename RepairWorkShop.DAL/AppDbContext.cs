@@ -10,6 +10,8 @@ namespace RepairWorkShop.DAL
         public DbSet<ServiceTask> ServiceTasks { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
         public string DbPath { get; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -51,6 +53,18 @@ namespace RepairWorkShop.DAL
                 .WithMany()
                 .HasForeignKey(e => e.CustomerId)
                 .IsRequired(false);
+
+            modelBuilder.Entity<ServiceTask>()
+                .HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .HasOne(e => e.Role)
+                .WithMany()
+                .HasForeignKey(e => e.RoleId)
+                .IsRequired();
         }
     }
 }

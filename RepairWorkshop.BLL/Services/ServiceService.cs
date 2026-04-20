@@ -41,7 +41,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Service not found");
 
             _context.Services.Remove(service);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Service> EditService(int id, EditServiceDto dto)

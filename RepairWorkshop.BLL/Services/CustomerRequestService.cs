@@ -51,22 +51,13 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Request must be new or highter(not draft)");
-
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            // ТРЕБА ЗРОБИТИ ПО-ІНШОМУ
-            request.Status = RequestStatus.Cancelled;
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Request must be new or highter(not draft)");
 
-            foreach (var item in request.RepairItems)
-            {
-                item.Status = RepairItemStatus.Cancelled;
-
-                foreach (var task in item.ServiceTasks)
-                    task.Status = ServiceTaskStatus.Cancelled;
-            }
+            request.Cancel();
 
             await context.SaveChangesAsync();
 
@@ -77,11 +68,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
-
             if (request == null)
                 throw new NotFoundException("Request not found");
+
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             request.Status = RequestStatus.Completed;
 
@@ -94,11 +85,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
-
             if (request == null)
                 throw new NotFoundException("Request not found");
+
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             request.Status = RequestStatus.Approved;
 
@@ -111,11 +102,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(id);
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
-
             if (request == null)
                 throw new NotFoundException("Request not found");
+
+            if (request.Status == RequestStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
 
             request.Status = RequestStatus.WaitingForPickUp;
 
@@ -161,23 +152,22 @@ namespace RepairWorkshop.BLL.Services
 
             return request;
         }
-
+        // переробити
         public async Task<CustomerRequest> StartRequest(int id)
         {
-            var request = await context.Requests.FindAsync(id);
+            var request = await context.Requests.FindAsync(id)
+                ?? throw new NotFoundException("Request not found");
 
-            if (request == null)
-                throw new NotFoundException("Request not found");
-
+            // invalidState по статусу валідацію, загальна помилка 
             if (request.Status != RequestStatus.Draft)
-                throw new ConflictException("Allowed only in draft");
+                throw new BadRequestException("Allowed only in draft"); // не можна робити дію
 
-            if(request.RepairItems.Any() == false)
+            if(!request.RepairItems.Any())
                 throw new ConflictException("No items in request");
 
             request.Status = RequestStatus.New;
 
-            context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return request;
         }

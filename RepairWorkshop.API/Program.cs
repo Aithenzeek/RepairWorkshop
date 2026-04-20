@@ -17,6 +17,8 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IRepairItemService, RepairItemService>();
 builder.Services.AddScoped<IServiceTaskService, ServiceTaskService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 
 
 builder.Services.AddDbContext<AppDbContext>(options =>

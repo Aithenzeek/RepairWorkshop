@@ -13,5 +13,13 @@ namespace RepairWorkShop.DAL.Entities
         public double TotalCost { get; set; }
         public List<RepairItem> RepairItems { get; set; } = new();
         public Customer? Customer { get; set; }
+
+        public void Cancel()
+        {
+            Status = RequestStatus.Cancelled;
+
+            foreach (var item in RepairItems)
+                item.Cancel();
+        }
     }
 }

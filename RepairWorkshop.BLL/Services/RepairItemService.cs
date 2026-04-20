@@ -40,17 +40,18 @@ namespace RepairWorkshop.BLL.Services
             return repairItem;
         }
 
-        public async void DeleteRepairItem(int id)
+        public async Task DeleteRepairItem(int id)
         {
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status != RepairItemStatus.Draft)
                 throw new ConflictException("Only draft can be deleted");
 
             _context.RepairItems.Remove(repairItem);
+
             await _context.SaveChangesAsync();
         }
 
@@ -59,12 +60,12 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            repairItem.Status = RepairItemStatus.OnHold;
+            repairItem.Status = RepairItemStatus.OnHold; //TODO: статус змінити
 
             await _context.SaveChangesAsync();
 
@@ -76,7 +77,7 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -93,16 +94,12 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            repairItem.Status = RepairItemStatus.Cancelled;
-
-            // Переробити
-            foreach(var task in repairItem.ServiceTasks)
-                task.Status = ServiceTaskStatus.Cancelled;
+            repairItem.Cancel();
 
             await _context.SaveChangesAsync();
 
@@ -114,7 +111,7 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -131,7 +128,7 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -148,7 +145,7 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -162,7 +159,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<RepairItem> EditRepairItem(int id, EditRepairItemDto dto)
         {
-            var serialNumber = await _context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber);
+            var serialNumber = await _context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його
 
             if (serialNumber)
                 throw new ConflictException("Item with such serial number exists");
@@ -170,7 +167,7 @@ namespace RepairWorkshop.BLL.Services
             var repairItem = await _context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
-                throw new DirectoryNotFoundException("Repair item not found");
+                throw new NotFoundException("Repair item not found");
 
             repairItem.Model = dto.Model;
             repairItem.SerialNumber = dto.SerialNumber;
@@ -182,7 +179,7 @@ namespace RepairWorkshop.BLL.Services
             return repairItem;
         }
 
-        public async Task<RepairItem> GetRepairItemById(int id)
+        public async Task<RepairItem?> GetRepairItemById(int id)
         {
             return await _context.RepairItems.FindAsync(id);
         }
@@ -194,7 +191,11 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<List<RepairItem>> GetAllActiveRepairItems(int workerId)
         {
-            return await _context.ServiceTasks.Where(t => t.WorkerId == workerId).Select(t => t.RepairItem).Distinct().ToListAsync();
+            return await _context.ServiceTasks
+                .Where(t => t.UserId == workerId)
+                .Select(t => t.RepairItem)
+                .Distinct()
+                .ToListAsync();
         }
 
         //public async Task<List<RepairItem>> GetAllActiveRepairItemsByItem(int id)

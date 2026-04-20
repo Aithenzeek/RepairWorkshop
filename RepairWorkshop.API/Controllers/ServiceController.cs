@@ -18,7 +18,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-all-services")]
         public async Task<IActionResult> GetAllServices()
         {
-            var services = _service.GetAllServices();
+            var services = await _service.GetAllServices();
 
             return Ok(services);
         }
@@ -26,7 +26,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-one/{id}")]
         public async Task<IActionResult> GetServiceByPhone(int id)
         {
-            var service = _service.GetServiceById(id);
+            var service = await _service.GetServiceById(id);
 
             return Ok(service);
         }
@@ -34,7 +34,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPost("create-service")]
         public async Task<IActionResult> CreateService([FromBody] CreateServiceDto dto)
         {
-            var service = _service.CreateService(dto);
+            var service = await _service.CreateService(dto);
 
             return Ok(service);
         }
@@ -50,7 +50,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("edit-service/{id}")]
         public async Task<IActionResult> EditService(int id, [FromBody] EditServiceDto dto)
         {
-            var service = _service.EditService(id, dto);
+            var service = await _service.EditService(id, dto);
 
             return Ok();
         }

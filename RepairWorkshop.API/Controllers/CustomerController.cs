@@ -7,18 +7,12 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CustomerController : ControllerBase
+    public class CustomerController(ICustomerService service) : ControllerBase
     {
-        private readonly ICustomerService _service;
-        public CustomerController(ICustomerService service)
-        {
-            _service = service;
-        }
-
         [HttpGet("get-all-customers")]
         public async Task<IActionResult> GetAllCustomers()
         {
-            var customers = _service.GetAllCustomers();
+            var customers = await service.GetAllCustomers();
 
             return Ok(customers);
         }
@@ -26,7 +20,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-one/{phone}")]
         public async Task<IActionResult> GetCustomerByPhone(string phone)
         {
-            var customer = _service.GetCustomerByPhone(phone);
+            var customer = await service.GetCustomerByPhone(phone);
 
             return Ok(customer);
         }
@@ -34,7 +28,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPost("create-customer")]
         public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
         {
-            var customer = _service.CreateCustomer(dto);
+            var customer = await service.CreateCustomer(dto);
 
             return Ok(customer);
         }
@@ -42,15 +36,15 @@ namespace RepairWorkshop.API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            _service.DeleteCustomer(id);
+            service.DeleteCustomer(id);
 
             return Ok();
         }
 
-        [HttpPatch("edit-customer/{number}")]
-        public async Task<IActionResult> EditCustomer(string number, [FromBody] CreateCustomerDto dto)
+        [HttpPatch("edit-customer/{id}")]
+        public async Task<IActionResult> EditCustomer(int id, [FromBody] CreateCustomerDto dto)
         {
-            var customer = _service.EditCustomer(number, dto);
+            var customer = await service.EditCustomer(id, dto);
 
             return Ok();
         }
