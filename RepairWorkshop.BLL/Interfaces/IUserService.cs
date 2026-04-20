@@ -9,9 +9,9 @@ namespace RepairWorkshop.BLL.Interfaces
     public interface IUserService
     {
         public Task<User> CreateUser(CreateUserDto dto);
-        public void DeleteUser(int id);
+        public Task DeleteUser(int id);
         public Task<User> EditUser(int id, EditUserDto dto);
         public Task<List<User>> GetAllUsers();
-        public Task<User> GetUserById(int id);
+        public Task<User?> GetUserById(int id);
     }
 }

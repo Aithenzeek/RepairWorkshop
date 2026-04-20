@@ -29,7 +29,7 @@ namespace RepairWorkshop.BLL.Services
             return customerRequest;
         }
 
-        public async void DeleteRequest(int id)
+        public async Task DeleteRequest(int id)
         {
             var request = await context.Requests.FindAsync(id);
 
@@ -117,12 +117,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<CustomerRequest?> GetRequestById(int id)
         {
-            return await context.Requests.FindAsync(id);
+            return await context.Requests
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<List<CustomerRequest>> GetAllRequests()
         {
-            return await context.Requests.ToListAsync();
+            return await context.Requests
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<CustomerRequest> EditRequest(int id, EditCustomerRequestDto dto)

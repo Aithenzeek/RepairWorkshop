@@ -4,8 +4,9 @@ using System.Text;
 
 namespace RepairWorkShop.DAL.Enums
 {
-    public enum Permission
+    public enum ServiceStatus
     {
-
+        Active,
+        Inactive
     }
 }

@@ -38,7 +38,7 @@ namespace RepairWorkshop.BLL.Services
             return customer;
         }
 
-        public async void DeleteCustomer(int id)
+        public async Task DeleteCustomer(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
 
@@ -77,17 +77,25 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<List<Customer>> GetAllCustomers()
         {
-            return await _context.Customers.ToListAsync();
+            return await _context.Customers
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public static string CheckPhone(string phone)
         {
             var checkedPhone = new string(phone.Where(char.IsDigit).ToArray());
 
-            if (phone.Length != 10)
-                throw new BadRequestException("Phone not valid");
+            //if (checkedPhone.Length != 10)
+            //    throw new BadRequestException("Phone not valid");
 
-            return checkedPhone;
+            if (checkedPhone.Length == 12 && checkedPhone.StartsWith("380"))
+                return checkedPhone;
+
+            if (checkedPhone.Length == 10)
+                return "380" + checkedPhone;
+
+            throw new BadRequestException("Phone not valid");
         }
     }
 }

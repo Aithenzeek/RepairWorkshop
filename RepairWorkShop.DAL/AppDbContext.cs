@@ -60,11 +60,27 @@ namespace RepairWorkShop.DAL
                 .HasForeignKey(e => e.UserId)
                 .IsRequired();
 
-            modelBuilder.Entity<User>()
-                .HasOne(e => e.Role)
-                .WithMany()
-                .HasForeignKey(e => e.RoleId)
-                .IsRequired();
+                modelBuilder.Entity<User>()
+                    .HasOne(e => e.Role)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoleId)
+                    .IsRequired();
+
+            modelBuilder.Entity<CustomerRequest>()
+                    .Property(e => e.Status)
+                    .HasConversion<string>();
+
+            modelBuilder.Entity<RepairItem>()
+                    .Property(e => e.Status)
+                    .HasConversion<string>();
+
+            modelBuilder.Entity<ServiceTask>()
+                    .Property(e => e.Status)
+                    .HasConversion<string>();
+
+            modelBuilder.Entity<Service>()
+                    .Property(e => e.Status)
+                    .HasConversion<string>();
         }
     }
 }

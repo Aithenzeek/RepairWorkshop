@@ -24,6 +24,11 @@ namespace RepairWorkshop.BLL.Services
             if(existingServiceTask != null && existingServiceTask.RepairItemId == repairItemId)
                 throw new ConflictException("Task with same service exists");
 
+            var service = await _context.Services.FindAsync(dto.ServiceId);
+
+            if(service.Status == ServiceStatus.Inactive)
+                throw new ConflictException("Can`t add inactive service");
+
             var serviceTask = new ServiceTask
             {
                 RepairItemId = repairItemId,
@@ -38,7 +43,7 @@ namespace RepairWorkshop.BLL.Services
             return serviceTask;
         }
 
-        public async Task<ServiceTask> DeleteServiceTask(int id)
+        public async Task DeleteServiceTask(int id)
         {
             var serviceTask = await _context.ServiceTasks.FindAsync(id);
 
@@ -50,8 +55,6 @@ namespace RepairWorkshop.BLL.Services
 
             _context.ServiceTasks.Remove(serviceTask);
             await _context.SaveChangesAsync();
-
-            return serviceTask;
         }
 
         public async Task<ServiceTask> CompleteServiceTask(int id)
@@ -129,6 +132,11 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка
 
+            var service = await _context.Services.FindAsync(dto.ServiceId);
+
+            if (serviceTask.Service.Status == ServiceStatus.Active && service.Status == ServiceStatus.Inactive)
+                throw new ConflictException("Can`t add inactive service");
+
             serviceTask.UserId = dto.WorkerId;
             serviceTask.ServiceId = dto.ServiceId;
 
@@ -137,19 +145,18 @@ namespace RepairWorkshop.BLL.Services
             return serviceTask;
         }
 
-        public async Task<ServiceTask> GetServiceTaskById(int id)
+        public async Task<ServiceTask?> GetServiceTaskById(int id)
         {
-            return await _context.ServiceTasks.FindAsync(id);
+            return await _context.ServiceTasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<List<ServiceTask>> GetAllServiceTasks()
         {
-            return await _context.ServiceTasks.ToListAsync();
+            return await _context.ServiceTasks
+                .AsNoTracking()
+                .ToListAsync();
         }
-
-        //public async Task<ServiceTask> AssingTechnician()
-        //{
-
-        //}
     }
 }

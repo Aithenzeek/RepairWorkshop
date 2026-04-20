@@ -181,12 +181,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<RepairItem?> GetRepairItemById(int id)
         {
-            return await _context.RepairItems.FindAsync(id);
+            return await _context.RepairItems
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<List<RepairItem>> GetAllRepairItems()
         {
-            return await _context.RepairItems.ToListAsync();
+            return await _context.RepairItems
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<List<RepairItem>> GetAllActiveRepairItems(int workerId)

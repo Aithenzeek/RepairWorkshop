@@ -31,7 +31,7 @@ namespace RepairWorkshop.BLL.Services
             return user;
         }
 
-        public async void DeleteUser(int id)
+        public async Task DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -60,12 +60,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<List<User>> GetAllUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
     }
 }

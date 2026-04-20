@@ -4,8 +4,10 @@ using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
+using RepairWorkShop.DAL.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace RepairWorkshop.BLL.Services
@@ -33,7 +35,7 @@ namespace RepairWorkshop.BLL.Services
             return service;
         }
 
-        public async void DeleteService(int id)
+        public async Task DeleteService(int id)
         {
             var service = await _context.Services.FindAsync(id);
 
@@ -61,12 +63,51 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<List<Service>> GetAllServices()
         {
-            return await _context.Services.ToListAsync();
+            return await _context.Services
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<Service> GetServiceById(int id)
+        public async Task<Service?> GetServiceById(int id)
         {
-            return await _context.Services.FindAsync(id);
+            return await _context.Services
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<Service> ActivateService(int id)
+        {
+            var service = await _context.Services.FindAsync(id);
+
+            if (service == null)
+                throw new NotFoundException("Service not found");
+
+            service.Status = ServiceStatus.Active;
+
+            await _context.SaveChangesAsync();
+
+            return service;
+        }
+
+        public async Task<Service> InactivateService(int id)
+        {
+            var service = await _context.Services.FindAsync(id);
+
+            if (service == null)
+                throw new NotFoundException("Service not found");
+
+            service.Status = ServiceStatus.Inactive;
+
+            await _context.SaveChangesAsync();
+
+            return service;
+        }
+
+        public async Task<List<Service>> GetAllActiveServices()
+        {
+            return await _context.Services
+                .Where(s => s.Status == ServiceStatus.Active)
+                .ToListAsync();
         }
     }
 }

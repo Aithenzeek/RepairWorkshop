@@ -29,7 +29,7 @@ namespace RepairWorkshop.BLL.Services
             return userRole;
         }
 
-        public async void DeleteUserRole(int id)
+        public async Task DeleteUserRole(int id)
         {
             var userRole = await _context.UserRoles.FindAsync(id);
 
@@ -56,12 +56,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<List<UserRole>> GetAllUserRoles()
         {
-            return await _context.UserRoles.ToListAsync();
+            return await _context.UserRoles
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<UserRole> GetUserRoleById(int id)
+        public async Task<UserRole?> GetUserRoleById(int id)
         {
-            return await _context.UserRoles.FindAsync(id);
+            return await _context.UserRoles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
     }
 }
