@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
-using RepairWorkShop.DAL.Entities;
 
 namespace RepairWorkshop.API.Controllers
 {

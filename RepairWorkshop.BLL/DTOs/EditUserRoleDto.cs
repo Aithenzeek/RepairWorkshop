@@ -1,7 +1,6 @@
 ﻿namespace RepairWorkshop.BLL.DTOs
 {
-    public record EditUserRoleDto
-    (
+    public record EditUserRoleDto(
         string Name
     );
 }

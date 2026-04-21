@@ -71,5 +71,13 @@ namespace RepairWorkshop.BLL.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
+
+        // треба тільки для назначення ролей
+        public async Task<User?> GetUserByPhone(string phone)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Phone == phone);
+        }
     }
 }

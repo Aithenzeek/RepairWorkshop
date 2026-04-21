@@ -5,10 +5,6 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
 
 namespace RepairWorkshop.BLL.Services
 {

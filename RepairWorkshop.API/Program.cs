@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RepairWorkshop.API.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkshop.BLL.Services;
 using RepairWorkShop.DAL;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,22 @@ builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<CustomGlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes("SUPER_SECRET_KEY_123456_SUPER_SECRET_KEY_123456")),
+
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -42,6 +61,8 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseExceptionHandler();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
