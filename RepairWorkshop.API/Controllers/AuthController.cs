@@ -26,12 +26,21 @@ namespace RepairWorkshop.API.Controllers
             if (user == null)
                 return NotFound();
 
+            var permissions = user.Role.RolePermissions
+                .Select(rp => rp.Permission.Code)
+                .ToList();
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Role, user.Role.Name)
             };
+
+            foreach (var p in permissions)
+            {
+                claims.Add(new Claim("permission", p));
+            }
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes("SUPER_SECRET_KEY_123456_SUPER_SECRET_KEY_123456"));

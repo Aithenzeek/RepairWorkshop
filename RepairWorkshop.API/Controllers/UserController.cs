@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
 
@@ -17,7 +18,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-all-users")]
-        [Authorize(Roles = "Admin")]
+        [HasPermission("USER_READ")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _service.GetAllUsers();

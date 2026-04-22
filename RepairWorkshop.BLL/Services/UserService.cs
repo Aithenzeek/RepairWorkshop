@@ -22,7 +22,7 @@ namespace RepairWorkshop.BLL.Services
             {
                 Name = dto.Name,
                 Phone = dto.Phone,
-                RoleId = dto.Role.Id,
+                RoleId = dto.RoleId,
             };
 
             await _context.Users.AddAsync(user);
@@ -51,7 +51,7 @@ namespace RepairWorkshop.BLL.Services
 
             user.Name = dto.Name;
             user.Phone = dto.Phone;
-            user.Role = dto.Role;
+            user.RoleId = dto.RoleId;
 
             await _context.SaveChangesAsync();
 
@@ -77,6 +77,8 @@ namespace RepairWorkshop.BLL.Services
         {
             return await _context.Users
                 .Include(u => u.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Phone == phone);
         }
     }

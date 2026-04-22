@@ -12,8 +12,8 @@ namespace RepairWorkShop.DAL
         public DbSet<Customer> Customers { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
-        //public DbSet<Permission> Permissions { get; set; }
-        //public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
         public string DbPath { get; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -67,6 +67,23 @@ namespace RepairWorkShop.DAL
                 .WithMany()
                 .HasForeignKey(e => e.RoleId)
                 .IsRequired();
+
+            modelBuilder.Entity<RolePermission>()
+                .HasKey(e => new { e.UserRoleId, e.PermissionId });
+
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(e => e.UserRole)
+                .WithMany(e => e.RolePermissions)
+                .HasForeignKey(e => e.UserRoleId);
+
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Permission)
+                .WithMany()
+                .HasForeignKey(rp => rp.PermissionId);
+
+            modelBuilder.Entity<Permission>()
+                    .HasIndex(p => p.Code)
+                    .IsUnique();
 
             modelBuilder.Entity<CustomerRequest>()
                     .Property(e => e.Status)
