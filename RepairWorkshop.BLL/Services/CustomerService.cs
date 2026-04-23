@@ -86,7 +86,7 @@ namespace RepairWorkshop.BLL.Services
                 return checkedPhone;
 
             if (checkedPhone.Length == 10)
-                return "380" + checkedPhone;
+                return "38" + checkedPhone;
 
             throw new BadRequestException("Phone not valid");
         }

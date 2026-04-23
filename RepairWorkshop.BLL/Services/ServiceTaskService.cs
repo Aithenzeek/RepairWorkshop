@@ -10,21 +10,29 @@ namespace RepairWorkshop.BLL.Services
 {
     public class ServiceTaskService(AppDbContext context) : IServiceTaskService
     {
-        public async Task<ServiceTask> CreateServiceTask(int repairItemId, CreateServiceTaskDto dto)
+        public async Task<ServiceTask> CreateServiceTask(CreateServiceTaskDto dto)
         {
             var existingServiceTask = await context.ServiceTasks.FindAsync(dto.ServiceId);
 
-            if(existingServiceTask != null && existingServiceTask.RepairItemId == repairItemId)
+            if (existingServiceTask != null && existingServiceTask.RepairItemId == dto.RepairItemId)
                 throw new ConflictException("Task with same service exists");
 
             var service = await context.Services.FindAsync(dto.ServiceId);
 
-            if(service.Status == ServiceStatus.Inactive)
+            if (service == null)
+                throw new NotFoundException("service not found");
+
+            if (service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
+
+            var existingRepairItem = await context.RepairItems.FindAsync(dto.RepairItemId);
+
+            if (existingRepairItem == null)
+                throw new NotFoundException("repair item not found");
 
             var serviceTask = new ServiceTask
             {
-                RepairItemId = repairItemId,
+                RepairItemId = dto.RepairItemId,
                 UserId = dto.WorkerId,
                 ServiceId = dto.ServiceId,
                 Status = ServiceTaskStatus.Draft
@@ -127,6 +135,9 @@ namespace RepairWorkshop.BLL.Services
 
             var service = await context.Services.FindAsync(dto.ServiceId);
 
+            if (service == null)
+                throw new NotFoundException("service not found");
+
             if (serviceTask.Service.Status == ServiceStatus.Active && service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
 
@@ -150,6 +161,21 @@ namespace RepairWorkshop.BLL.Services
             return await context.ServiceTasks
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<List<ServiceTask>> GetAllActiveServiceTasks(int userId, bool activeOnly)
+        {
+            var serviceTasks = context.ServiceTasks.Where(t => t.UserId == userId);
+
+            if (activeOnly)
+            {
+                serviceTasks = serviceTasks.Where(t =>
+                t.Status != ServiceTaskStatus.Draft &&
+                t.Status != ServiceTaskStatus.Completed &&
+                t.Status != ServiceTaskStatus.Cancelled);
+            }
+
+            return await serviceTasks.ToListAsync();
         }
     }
 }

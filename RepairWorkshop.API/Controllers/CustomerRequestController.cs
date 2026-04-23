@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
 
@@ -10,7 +11,8 @@ namespace RepairWorkshop.API.Controllers
         ICustomerRequestService service
     ) : ControllerBase
     {
-        [HttpGet("get-all-requests")]
+        [HttpGet("get-all")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> GetRequests()
         {
             var requests = await service.GetAllRequests();
@@ -18,7 +20,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(requests);
         }
 
-        [HttpGet("get-one/{id}")]
+        [HttpGet("get-by-id/{id}")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> GetRequest(int id)
         {
             var request = await service.GetRequestById(id);
@@ -26,7 +29,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPost("create-request")]
+        [HttpPost("create")]
+        [HasPermission("REQUEST_CREATE")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateCustomerRequestDto dto)
         {
             var request = await service.CreateRequest(dto);
@@ -34,15 +38,17 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpDelete("delete-request{id}")]
+        [HttpDelete("delete{id}")]
+        [HasPermission("REQUEST_DELETE")]
         public async Task<IActionResult> DeleteRequest([FromRoute] int id)
         {
-            service.DeleteRequest(id);
+            await service.DeleteRequest(id);
 
             return Ok();
         }
 
-        [HttpPatch("complete-request")]
+        [HttpPatch("complete")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> CompleteRequest([FromBody] int id)
         {
             var request = await service.CompleteRequest(id);
@@ -50,7 +56,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPatch("cancel-request")]
+        [HttpPatch("cancel")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> CancellRequest([FromBody] int id)
         {
             var request = await service.CancelRequest(id);
@@ -58,7 +65,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPatch("approve-request")]
+        [HttpPatch("approve")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> ApproveRequest([FromBody] int id)
         {
             var request = await service.ApproveRequest(id);
@@ -66,7 +74,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPatch("allow-pickup")]
+        [HttpPatch("allow")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> AllowPickUp([FromBody] int id)
         {
             var request = await service.AllowPickUp(id);
@@ -74,7 +83,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPatch("edit-request/{id}")]
+        [HttpPatch("edit/{id}")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> EditRequest(int id, [FromBody] EditCustomerRequestDto dto)
         {
             var request = await service.EditRequest(id, dto);
@@ -82,7 +92,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpPatch("start-request/{id}")]
+        [HttpPatch("start/{id}")]
+        [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> StartRequest([FromBody] int id)
         {
             var request = await service.StartRequest(id);

@@ -10,7 +10,7 @@ namespace RepairWorkshop.API.Controllers
     [Route("[controller]")]
     public class UserController(IUserService service) : ControllerBase
     {
-        [HttpGet("get-all-users")]
+        [HttpGet("get-all")]
         [HasPermission("USER_READ")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -19,7 +19,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(users);
         }
 
-        [HttpGet("get-one/{id}")]
+        [HttpGet("get-by-id/{id}")]
+        [HasPermission("USER_READ")]
         public async Task<IActionResult> GetUserById(int id)
         {
             var user = await service.GetUserById(id);
@@ -27,7 +28,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(user);
         }
 
-        [HttpPost("create-user")]
+        [HttpPost("create")]
+        [HasPermission("USER_CREATE")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
         {
             var user = await service.CreateUser(dto);
@@ -36,14 +38,16 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [HasPermission("USER_DELETE")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            service.DeleteUser(id);
+            await service.DeleteUser(id);
 
             return Ok();
         }
 
-        [HttpPatch("edit-user/{id}")]
+        [HttpPatch("edit/{id}")]
+        [HasPermission("USER_EDIT")]
         public async Task<IActionResult> EditUser(int id, [FromBody] EditUserDto dto)
         {
             var user = await service.EditUser(id, dto);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
 
@@ -8,7 +9,8 @@ namespace RepairWorkshop.API.Controllers
     [Route("[controller]")]
     public class CustomerController(ICustomerService service) : ControllerBase
     {
-        [HttpGet("get-all-customers")]
+        [HttpGet("get-all")]
+        [HasPermission("CUSTOMER_READ")]
         public async Task<IActionResult> GetAllCustomers()
         {
             var customers = await service.GetAllCustomers();
@@ -16,7 +18,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(customers);
         }
 
-        [HttpGet("get-one/{phone}")]
+        [HttpGet("search-by-phone/{phone}")]
+        [HasPermission("CUSTOMER_READ")]
         public async Task<IActionResult> GetCustomerByPhone(string phone)
         {
             var customer = await service.GetCustomerByPhone(phone);
@@ -24,7 +27,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(customer);
         }
 
-        [HttpPost("create-customer")]
+        [HttpPost("create")]
+        [HasPermission("CUSTOMER_CREATE")]
         public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
         {
             var customer = await service.CreateCustomer(dto);
@@ -33,14 +37,16 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [HasPermission("CUSTOMER_DELETE")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            service.DeleteCustomer(id);
+            await service.DeleteCustomer(id);
 
             return Ok();
         }
 
-        [HttpPatch("edit-customer/{id}")]
+        [HttpPatch("edit/{id}")]
+        [HasPermission("CUSTOMER_EDIT")]
         public async Task<IActionResult> EditCustomer(int id, [FromBody] EditCustomerDto dto)
         {
             var customer = await service.EditCustomer(id, dto);

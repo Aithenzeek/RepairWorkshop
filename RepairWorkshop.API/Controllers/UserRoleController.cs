@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
 
@@ -9,9 +10,10 @@ namespace RepairWorkshop.API.Controllers
     public class UserRoleController(
         IRolePermissionService rolePermissionService,
         IUserRoleService userRoleService
-    )  : ControllerBase
+    ) : ControllerBase
     {
-        [HttpGet("get-all-user-roles")]
+        [HttpGet("get-all")]
+        [HasPermission("USER_ROLE_READ")]
         public async Task<IActionResult> GetAllUserRoles()
         {
             var userRoles = await userRoleService.GetAllUserRoles();
@@ -19,7 +21,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(userRoles);
         }
 
-        [HttpGet("get-user-role/{id}")]
+        [HttpGet("get-by-id/{id}")]
+        [HasPermission("USER_ROLE_READ")]
         public async Task<IActionResult> GetUserRoleById(int id)
         {
             var userRole = await userRoleService.GetUserRoleById(id);
@@ -27,7 +30,8 @@ namespace RepairWorkshop.API.Controllers
             return Ok(userRole);
         }
 
-        [HttpPost("create-user-role")]
+        [HttpPost("create")]
+        [HasPermission("USER_ROLE_CREATE")]
         public async Task<IActionResult> CreateUserRole([FromBody] CreateUserRoleDto dto)
         {
             var userRole = await userRoleService.CreateUserRole(dto);
@@ -35,15 +39,17 @@ namespace RepairWorkshop.API.Controllers
             return Ok(userRole);
         }
 
-        [HttpDelete("delete-user-role/{id}")]
+        [HttpDelete("delete/{id}")]
+        [HasPermission("USER_ROLE_DELETE")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            userRoleService.DeleteUserRole(id);
+            await userRoleService.DeleteUserRole(id);
 
             return Ok();
         }
 
-        [HttpPatch("edit-user-role/{id}")]
+        [HttpPatch("edit/{id}")]
+        [HasPermission("USER_ROLE_EDIT")]
         public async Task<IActionResult> EditUser(int id, [FromBody] EditUserRoleDto dto)
         {
             var userRole = await userRoleService.EditUserRole(id, dto);
@@ -51,9 +57,10 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        // role permissions
+        //role permissions
 
         [HttpGet("get-all-role-permissions")]
+        [HasPermission("ROLE_PERMISSION_READ")]
         public async Task<IActionResult> GetAllRolePermissions()
         {
             var rolePermissions = await rolePermissionService.GetAllRolePermissions();
@@ -61,15 +68,17 @@ namespace RepairWorkshop.API.Controllers
             return Ok(rolePermissions);
         }
 
-        [HttpGet("get-one")]
+        [HttpGet("get-role-permission-by-id")]
+        [HasPermission("ROLE_PERMISSION_READ")]
         public async Task<IActionResult> GetrolePermissionById(int userRoleId, int permissionId)
         {
-        var rolePermission = await rolePermissionService.GetRolePermissionById(userRoleId, permissionId);
+            var rolePermission = await rolePermissionService.GetRolePermissionById(userRoleId, permissionId);
 
-        return Ok(rolePermission);
+            return Ok(rolePermission);
         }
 
         [HttpPost("create-role-permission")]
+        [HasPermission("ROLE_PERMISSION_CREATE")]
         public async Task<IActionResult> CreateRolePermission([FromBody] CreateRolePermissionDto dto)
         {
             var rolePermission = await rolePermissionService.CreateRolePermission(dto);
@@ -77,20 +86,22 @@ namespace RepairWorkshop.API.Controllers
             return Ok(rolePermission);
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("delete-role-permission")]
+        [HasPermission("ROLE_PERMISSION_DELETE")]
         public async Task<IActionResult> DeleteRolePermission(int userRoleId, int permissionId)
         {
-        rolePermissionService.DeleteRolePermission(userRoleId, permissionId);
+            await rolePermissionService.DeleteRolePermission(userRoleId, permissionId);
 
-        return Ok();
+            return Ok();
         }
 
         [HttpPatch("edit-role-permission/{id}")]
+        [HasPermission("ROLE_PERMISSION_EDIT")]
         public async Task<IActionResult> EditrolePermission(int userRoleId, int permissionId, [FromBody] EditRolePermissionDto dto)
         {
-        var rolePermission = await rolePermissionService.EditRolePermission(userRoleId, permissionId, dto);
+            var rolePermission = await rolePermissionService.EditRolePermission(userRoleId, permissionId, dto);
 
-        return Ok();
+            return Ok();
         }
     }
 }

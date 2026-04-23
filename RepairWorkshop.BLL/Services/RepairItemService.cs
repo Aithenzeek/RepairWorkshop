@@ -185,18 +185,22 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<List<RepairItem>> GetAllActiveRepairItems(int workerId)
+        public async Task<List<RepairItem>> GetAllActiveRepairItems(int userId, bool activeOnly)
         {
-            return await context.ServiceTasks
-                .Where(t => t.UserId == workerId)
-                .Select(t => t.RepairItem)
-                .Distinct()
-                .ToListAsync();
-        }
+            var repairItems = context.ServiceTasks
+                    .Where(t => t.UserId == userId)
+                    .Select(t => t.RepairItem);
 
-        //public async Task<List<RepairItem>> GetAllActiveRepairItemsByItem(int id)
-        //{
-        //    return await _context.ServiceTasks.Where(t => t.RepairItemId == id && t.Status != ServiceTaskStatus.Draft).ToListAsync();
-        //}
+            if (activeOnly)
+            {
+                repairItems.Where(r => r.Status != RepairItemStatus.Draft &&
+                    r.Status != RepairItemStatus.Completed &&
+                    r.Status != RepairItemStatus.Cancelled &&
+                    r.Status != RepairItemStatus.WaitingForPickUp)
+                    .Distinct();
+            }
+
+            return await repairItems.ToListAsync();
+        }
     }
 }
