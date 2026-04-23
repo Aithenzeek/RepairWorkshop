@@ -8,18 +8,11 @@ using RepairWorkShop.DAL.Enums;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class RepairItemService : IRepairItemService
+    public class RepairItemService(AppDbContext context) : IRepairItemService
     {
-        private readonly AppDbContext _context;
-
-        public RepairItemService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<RepairItem> CreateRepairItem(CreateRepairItemDto dto)
         {
-            var request = await _context.Requests.FindAsync(dto.requestId);
+            var request = await context.Requests.FindAsync(dto.requestId);
 
             if (request == null)
                 throw new NotFoundException("request not found");
@@ -33,15 +26,15 @@ namespace RepairWorkshop.BLL.Services
                 Status = RepairItemStatus.Draft,
             };
 
-            await _context.RepairItems.AddAsync(repairItem);
-            await _context.SaveChangesAsync();
+            await context.RepairItems.AddAsync(repairItem);
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task DeleteRepairItem(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -49,14 +42,14 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem.Status != RepairItemStatus.Draft)
                 throw new ConflictException("Only draft can be deleted");
 
-            _context.RepairItems.Remove(repairItem);
+            context.RepairItems.Remove(repairItem);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<RepairItem> ApproveRepairItem(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -66,14 +59,14 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Status = RepairItemStatus.OnHold; //TODO: статус змінити
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> CompleteRepairItem(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -83,14 +76,14 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Status = RepairItemStatus.Completed;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> CancelRepairItem(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -100,14 +93,14 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Cancel();
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> AllowPickUpRepairItem(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -117,14 +110,14 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Status = RepairItemStatus.WaitingForPickUp;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> WaitForRepairItemParts(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -134,14 +127,14 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Status = RepairItemStatus.WaitingForParts;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> SetOnHoldRepairItemWork(int id)
         {
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -151,19 +144,19 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Status = RepairItemStatus.OnHold;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem> EditRepairItem(int id, EditRepairItemDto dto)
         {
-            var serialNumber = await _context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його
+            var serialNumber = await context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його
 
             if (serialNumber)
                 throw new ConflictException("Item with such serial number exists");
 
-            var repairItem = await _context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.FindAsync(id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -173,28 +166,28 @@ namespace RepairWorkshop.BLL.Services
             repairItem.ProblemDescription = dto.ProblemDescription;
             repairItem.Notes = dto.Notes;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return repairItem;
         }
 
         public async Task<RepairItem?> GetRepairItemById(int id)
         {
-            return await _context.RepairItems
+            return await context.RepairItems
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<List<RepairItem>> GetAllRepairItems()
         {
-            return await _context.RepairItems
+            return await context.RepairItems
                 .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<List<RepairItem>> GetAllActiveRepairItems(int workerId)
         {
-            return await _context.ServiceTasks
+            return await context.ServiceTasks
                 .Where(t => t.UserId == workerId)
                 .Select(t => t.RepairItem)
                 .Distinct()

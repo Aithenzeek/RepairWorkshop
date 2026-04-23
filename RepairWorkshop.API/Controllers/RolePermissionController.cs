@@ -6,22 +6,15 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RolePermissionController : ControllerBase
+    public class RolePermissionController(IRolePermissionService service) : ControllerBase
     {
-        private readonly IRolePermissionService _service;
-
-        public RolePermissionController(IRolePermissionService service)
-        {
-            _service = service;
-        }
-
-        [HttpGet("get-all-role-permissions")]
-        public async Task<IActionResult> GetAllRolePermissions()
-        {
-            var rolePermissions = await _service.GetAllRolePermissions();
-
-            return Ok(rolePermissions);
-        }
+        //[HttpGet("get-all-role-permissions")]
+        //public async Task<IActionResult> GetAllRolePermissions()
+        //{
+        //    var rolePermissions = await service.GetAllRolePermissions();
+        //
+        //    return Ok(rolePermissions);
+        //}
 
         //[HttpGet("get-one/{id}")]
         //public async Task<IActionResult> GetrolePermissionById(int id)
@@ -31,13 +24,13 @@ namespace RepairWorkshop.API.Controllers
             //return Ok(rolePermission);
         //}
 
-        [HttpPost("create-role-permission")]
-        public async Task<IActionResult> CreateRolePermission([FromBody] CreateRolePermissionDto dto)
-        {
-            var rolePermission = await _service.CreateRolePermission(dto);
-
-            return Ok(rolePermission);
-        }
+        //[HttpPost("create-role-permission")]
+        //public async Task<IActionResult> CreateRolePermission([FromBody] CreateRolePermissionDto dto)
+        //{
+        //    var rolePermission = await service.CreateRolePermission(dto);
+        //
+        //    return Ok(rolePermission);
+        //}
 
         //[HttpDelete("delete/{id}")]
         //public async Task<IActionResult> DeleteRolePermission(int id)

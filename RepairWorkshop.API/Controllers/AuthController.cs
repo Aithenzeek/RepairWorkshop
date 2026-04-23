@@ -9,19 +9,12 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController(IUserService userService) : ControllerBase
     {
-        private readonly IUserService _userService;
-
-        public AuthController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login(string phone)
         {
-            var user = await _userService.GetUserByPhone(phone);
+            var user = await userService.GetUserByPhone(phone);
 
             if (user == null)
                 return NotFound();

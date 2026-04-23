@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.BLL.DTOs;
+using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
@@ -9,15 +10,8 @@ using System.Text;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class PermissionService : IPermissionService
+    public class PermissionService(AppDbContext context) : IPermissionService
     {
-        private readonly AppDbContext _context;
-
-        public PermissionService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<Permission> CreatePermission(CreatePermissionDto dto)
         {
             var permission = new Permission
@@ -26,40 +20,46 @@ namespace RepairWorkshop.BLL.Services
                 Code = dto.Code
             };
 
-            await _context.AddAsync(permission);
-            await _context.SaveChangesAsync();
+            await context.AddAsync(permission);
+            await context.SaveChangesAsync();
 
             return permission;
         }
 
         public async Task DeletePermission(int id)
         {
-            var permission = await _context.Permissions.FindAsync(id);
+            var permission = await context.Permissions.FindAsync(id);
 
-            _context.Permissions.Remove(permission);
-            await _context.SaveChangesAsync();
+            if (permission == null)
+                throw new NotFoundException("premission not found");
+
+            context.Permissions.Remove(permission);
+            await context.SaveChangesAsync();
         }
 
         public async Task<Permission> EditPermission(int id, EditPermissionDto dto)
         {
-            var permission = await _context.Permissions.FindAsync(id);
+            var permission = await context.Permissions.FindAsync(id);
+
+            if (permission == null)
+                throw new NotFoundException("premission not found");
 
             permission.Name = dto.Name;
             permission.Code = dto.Code;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return permission;
         }
 
-        public async Task<Permission> GetPermissionById(int id)
+        public async Task<Permission?> GetPermissionById(int id)
         {
-            return await _context.Permissions.FindAsync(id);
+            return await context.Permissions.FindAsync(id);
         }
 
         public async Task<List<Permission>> GetAllPermissions()
         {
-            return await _context.Permissions.ToListAsync();
+            return await context.Permissions.ToListAsync();
         }
     }
 }

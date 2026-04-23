@@ -6,18 +6,12 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ServiceTaskController : ControllerBase
+    public class ServiceTaskController(IServiceTaskService service) : ControllerBase
     {
-        private readonly IServiceTaskService _service;
-        public ServiceTaskController(IServiceTaskService service)
-        {
-            _service = service;
-        }
-
         [HttpGet("get-all-tasks")]
         public async Task<IActionResult> GetAllServiceTasks()
         {
-            var serviceTasks = await _service.GetAllServiceTasks();
+            var serviceTasks = await service.GetAllServiceTasks();
 
             return Ok(serviceTasks);
         }
@@ -25,7 +19,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-task/{id}")]
         public async Task<IActionResult> GetserviceTaskById(int id)
         {
-            var serviceTask = await _service.GetServiceTaskById(id);
+            var serviceTask = await service.GetServiceTaskById(id);
 
             return Ok(serviceTask);
         }
@@ -33,7 +27,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPost("create-task")]
         public async Task<IActionResult> CreateserviceTask(int id, [FromBody] CreateServiceTaskDto dto)
         {
-            var serviceTask = await _service.CreateServiceTask(id, dto);
+            var serviceTask = await service.CreateServiceTask(id, dto);
 
             return Ok(serviceTask);
         }
@@ -41,7 +35,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteserviceTask(int id)
         {
-            _service.DeleteServiceTask(id);
+            service.DeleteServiceTask(id);
 
             return Ok();
         }
@@ -49,7 +43,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("complete-task")]
         public async Task<IActionResult> CompleteserviceTask([FromBody] int id)
         {
-            var serviceTask = await _service.CompleteServiceTask(id);
+            var serviceTask = await service.CompleteServiceTask(id);
 
             return Ok(serviceTask);
         }
@@ -57,7 +51,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("cancel-task")]
         public async Task<IActionResult> CancelserviceTask([FromBody] int id)
         {
-            var serviceTask = await _service.CancelServiceTask(id);
+            var serviceTask = await service.CancelServiceTask(id);
 
             return Ok(serviceTask);
         }
@@ -65,7 +59,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("wait-for-parts")]
         public async Task<IActionResult> WaitForserviceTaskParts([FromBody] int id)
         {
-            var serviceTask = await _service.WaitForServiceTaskParts(id);
+            var serviceTask = await service.WaitForServiceTaskParts(id);
 
             return Ok(serviceTask);
         }
@@ -73,7 +67,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("set-on-hold-task")]
         public async Task<IActionResult> SetOnHoldserviceTask([FromBody] int id)
         {
-            var serviceTask = await _service.SetOnHoldServiceTask(id);
+            var serviceTask = await service.SetOnHoldServiceTask(id);
 
             return Ok(serviceTask);
         }
@@ -81,7 +75,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("edit-task/{id}")]
         public async Task<IActionResult> EditserviceTask(int id, [FromBody] EditServiceTaskDto dto)
         {
-            var serviceTask = await _service.EditServiceTask(id, dto);
+            var serviceTask = await service.EditServiceTask(id, dto);
 
             return Ok(serviceTask);
         }

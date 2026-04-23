@@ -8,7 +8,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<Permission> CreatePermission(CreatePermissionDto dto);
         public Task DeletePermission(int id);
         public Task<Permission> EditPermission(int id, EditPermissionDto dto);
-        public Task<Permission> GetPermissionById(int id);
+        public Task<Permission?> GetPermissionById(int id);
         public Task<List<Permission>> GetAllPermissions();
     }
 }

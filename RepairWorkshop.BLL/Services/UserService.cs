@@ -7,15 +7,8 @@ using RepairWorkShop.DAL.Entities;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class UserService : IUserService
+    public class UserService(AppDbContext context) : IUserService
     {
-        private readonly AppDbContext _context;
-
-        public UserService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<User> CreateUser(CreateUserDto dto)
         {
             var user = new User
@@ -25,26 +18,26 @@ namespace RepairWorkshop.BLL.Services
                 RoleId = dto.RoleId,
             };
 
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            await context.Users.AddAsync(user);
+            await context.SaveChangesAsync();
 
             return user;
         }
 
         public async Task DeleteUser(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
 
             if (user == null)
                 throw new NotFoundException("User not found");
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
         }
 
         public async Task<User> EditUser(int id, EditUserDto dto)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
 
             if (user == null)
                 throw new NotFoundException("User not found");
@@ -53,21 +46,21 @@ namespace RepairWorkshop.BLL.Services
             user.Phone = dto.Phone;
             user.RoleId = dto.RoleId;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return user;
         }
 
         public async Task<List<User>> GetAllUsers()
         {
-            return await _context.Users
+            return await context.Users
                 .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<User?> GetUserById(int id)
         {
-            return await _context.Users
+            return await context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
@@ -75,7 +68,7 @@ namespace RepairWorkshop.BLL.Services
         // треба тільки для назначення ролей
         public async Task<User?> GetUserByPhone(string phone)
         {
-            return await _context.Users
+            return await context.Users
                 .Include(u => u.Role)
                     .ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permission)

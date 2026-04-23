@@ -6,19 +6,12 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class PermissionController : ControllerBase
+    public class PermissionController(IPermissionService service) : ControllerBase
     {
-        private readonly IPermissionService _service;
-
-        public PermissionController(IPermissionService service)
-        {
-            _service = service;
-        }
-
         [HttpGet("get-all-permissions")]
         public async Task<IActionResult> GetAllPermissions()
         {
-            var permissions = await _service.GetAllPermissions();
+            var permissions = await service.GetAllPermissions();
 
             return Ok(permissions);
         }
@@ -26,7 +19,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpGet("get-one/{id}")]
         public async Task<IActionResult> GetPermissionById(int id)
         {
-            var permission = await _service.GetPermissionById(id);
+            var permission = await service.GetPermissionById(id);
 
             return Ok(permission);
         }
@@ -34,7 +27,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPost("create-permission")]
         public async Task<IActionResult> CreatePermission([FromBody] CreatePermissionDto dto)
         {
-            var permission = await _service.CreatePermission(dto);
+            var permission = await service.CreatePermission(dto);
 
             return Ok(permission);
         }
@@ -42,7 +35,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePermission(int id)
         {
-            _service.DeletePermission(id);
+            service.DeletePermission(id);
 
             return Ok();
         }
@@ -50,7 +43,7 @@ namespace RepairWorkshop.API.Controllers
         [HttpPatch("edit-permission/{id}")]
         public async Task<IActionResult> EditPermission(int id, [FromBody] EditPermissionDto dto)
         {
-            var permission = await _service.EditPermission(id, dto);
+            var permission = await service.EditPermission(id, dto);
 
             return Ok();
         }

@@ -37,7 +37,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Request not found");
 
             if (request.Status != RequestStatus.Draft)
-                throw new NotFoundException("Only draft can be deleted");
+                throw new ConflictException("Only draft can be deleted");
 
             //if (request.RepairItems.Any())
             //    throw new ConflictException("Cannot delete object with subobjects");

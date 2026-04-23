@@ -8,23 +8,16 @@ using RepairWorkShop.DAL.Enums;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class ServiceTaskService : IServiceTaskService
+    public class ServiceTaskService(AppDbContext context) : IServiceTaskService
     {
-        private AppDbContext _context;
-
-        public ServiceTaskService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<ServiceTask> CreateServiceTask(int repairItemId, CreateServiceTaskDto dto)
         {
-            var existingServiceTask = await _context.ServiceTasks.FindAsync(dto.ServiceId);
+            var existingServiceTask = await context.ServiceTasks.FindAsync(dto.ServiceId);
 
             if(existingServiceTask != null && existingServiceTask.RepairItemId == repairItemId)
                 throw new ConflictException("Task with same service exists");
 
-            var service = await _context.Services.FindAsync(dto.ServiceId);
+            var service = await context.Services.FindAsync(dto.ServiceId);
 
             if(service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
@@ -37,15 +30,15 @@ namespace RepairWorkshop.BLL.Services
                 Status = ServiceTaskStatus.Draft
             };
 
-            await _context.ServiceTasks.AddAsync(serviceTask);
-            await _context.SaveChangesAsync();
+            await context.ServiceTasks.AddAsync(serviceTask);
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task DeleteServiceTask(int id)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -53,13 +46,13 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Only draft can be deleted");
 
-            _context.ServiceTasks.Remove(serviceTask);
-            await _context.SaveChangesAsync();
+            context.ServiceTasks.Remove(serviceTask);
+            await context.SaveChangesAsync();
         }
 
         public async Task<ServiceTask> CompleteServiceTask(int id)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -69,14 +62,14 @@ namespace RepairWorkshop.BLL.Services
 
             serviceTask.Status = ServiceTaskStatus.Completed;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task<ServiceTask> CancelServiceTask(int id)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -86,14 +79,14 @@ namespace RepairWorkshop.BLL.Services
 
             serviceTask.Status = ServiceTaskStatus.Cancelled;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task<ServiceTask> SetOnHoldServiceTask(int id)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -103,14 +96,14 @@ namespace RepairWorkshop.BLL.Services
 
             serviceTask.Status = ServiceTaskStatus.OnHold;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task<ServiceTask> WaitForServiceTaskParts(int id)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -120,19 +113,19 @@ namespace RepairWorkshop.BLL.Services
 
             serviceTask.Status = ServiceTaskStatus.WaitingForParts;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task<ServiceTask> EditServiceTask(int id, EditServiceTaskDto dto)
         {
-            var serviceTask = await _context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка
 
-            var service = await _context.Services.FindAsync(dto.ServiceId);
+            var service = await context.Services.FindAsync(dto.ServiceId);
 
             if (serviceTask.Service.Status == ServiceStatus.Active && service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
@@ -140,21 +133,21 @@ namespace RepairWorkshop.BLL.Services
             serviceTask.UserId = dto.WorkerId;
             serviceTask.ServiceId = dto.ServiceId;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
         public async Task<ServiceTask?> GetServiceTaskById(int id)
         {
-            return await _context.ServiceTasks
+            return await context.ServiceTasks
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<List<ServiceTask>> GetAllServiceTasks()
         {
-            return await _context.ServiceTasks
+            return await context.ServiceTasks
                 .AsNoTracking()
                 .ToListAsync();
         }

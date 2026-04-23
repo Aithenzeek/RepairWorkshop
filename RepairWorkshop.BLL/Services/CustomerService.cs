@@ -7,20 +7,13 @@ using RepairWorkShop.DAL.Entities;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class CustomerService : ICustomerService
+    public class CustomerService(AppDbContext context) : ICustomerService
     {
-        private readonly AppDbContext _context;
-
-        public CustomerService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<Customer> CreateCustomer(CreateCustomerDto dto)
         {
             var phone = CheckPhone(dto.Phone);
 
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
+            var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
 
             if (existingCustomer != null)
                 return existingCustomer;
@@ -31,31 +24,31 @@ namespace RepairWorkshop.BLL.Services
                 Phone = phone
             };
 
-            await _context.Customers.AddAsync(customer);
+            await context.Customers.AddAsync(customer);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return customer;
         }
 
         public async Task DeleteCustomer(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await context.Customers.FindAsync(id);
 
             if (customer == null)
                 throw new NotFoundException("Customer not found");
 
 
-            _context.Customers.Remove(customer);
+            context.Customers.Remove(customer);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<Customer> EditCustomer(int id, EditCustomerDto dto)
         {
             var formattedPhone = CheckPhone(dto.Phone);
 
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await context.Customers.FindAsync(id);
 
             if (customer == null)
                 throw new NotFoundException("Customer not found");
@@ -63,21 +56,21 @@ namespace RepairWorkshop.BLL.Services
             customer.Name = dto.Name;
             customer.Phone = formattedPhone;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return customer;
         }
 
         public async Task<Customer?> GetCustomerByPhone(string phone)
         {
-            return await _context.Customers
+            return await context.Customers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Phone == phone);
         }
 
         public async Task<List<Customer>> GetAllCustomers()
         {
-            return await _context.Customers
+            return await context.Customers
                 .AsNoTracking()
                 .ToListAsync();
         }

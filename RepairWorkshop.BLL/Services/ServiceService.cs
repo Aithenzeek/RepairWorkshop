@@ -8,15 +8,8 @@ using RepairWorkShop.DAL.Enums;
 
 namespace RepairWorkshop.BLL.Services
 {
-    public class ServiceService : IServiceService
+    public class ServiceService(AppDbContext context) : IServiceService
     {
-        private readonly AppDbContext _context;
-
-        public ServiceService(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<Service> CreateService(CreateServiceDto dto)
         {
             var service = new Service
@@ -25,26 +18,26 @@ namespace RepairWorkshop.BLL.Services
                 Price = dto.Price
             };
 
-            await _context.Services.AddAsync(service);
-            await _context.SaveChangesAsync();
+            await context.Services.AddAsync(service);
+            await context.SaveChangesAsync();
 
             return service;
         }
 
         public async Task DeleteService(int id)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await context.Services.FindAsync(id);
 
             if (service == null)
                 throw new NotFoundException("Service not found");
 
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
+            context.Services.Remove(service);
+            await context.SaveChangesAsync();
         }
 
         public async Task<Service> EditService(int id, EditServiceDto dto)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await context.Services.FindAsync(id);
 
             if (service == null)
                 throw new NotFoundException("Service not found");
@@ -52,56 +45,56 @@ namespace RepairWorkshop.BLL.Services
             service.Name = dto.Name;
             service.Price = dto.Price;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return service;
         }
 
         public async Task<List<Service>> GetAllServices()
         {
-            return await _context.Services
+            return await context.Services
                 .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<Service?> GetServiceById(int id)
         {
-            return await _context.Services
+            return await context.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task<Service> ActivateService(int id)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await context.Services.FindAsync(id);
 
             if (service == null)
                 throw new NotFoundException("Service not found");
 
             service.Status = ServiceStatus.Active;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return service;
         }
 
         public async Task<Service> InactivateService(int id)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await context.Services.FindAsync(id);
 
             if (service == null)
                 throw new NotFoundException("Service not found");
 
             service.Status = ServiceStatus.Inactive;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return service;
         }
 
         public async Task<List<Service>> GetAllActiveServices()
         {
-            return await _context.Services
+            return await context.Services
                 .Where(s => s.Status == ServiceStatus.Active)
                 .ToListAsync();
         }

@@ -6,14 +6,9 @@ namespace RepairWorkshop.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ServiceController : ControllerBase
+    public class ServiceController(IServiceService service) : ControllerBase
     {
-        private readonly IServiceService _service;
-
-        public ServiceController(IServiceService service)
-        {
-            _service = service;
-        }
+        private readonly IServiceService _service = service;
 
         [HttpGet("get-all-services")]
         public async Task<IActionResult> GetAllServices()
