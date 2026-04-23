@@ -10,7 +10,7 @@ namespace RepairWorkshop.API.Controllers
     public class PermissionController(IPermissionService service) : ControllerBase
     {
         [HttpGet("get-all")]
-        //[HasPermission("PERMISSION_READ")]
+        [HasPermission("PERMISSION_READ")]
         public async Task<IActionResult> GetAllPermissions()
         {
             var permissions = await service.GetAllPermissions();

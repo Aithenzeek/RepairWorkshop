@@ -170,9 +170,9 @@ namespace RepairWorkshop.BLL.Services
             if (activeOnly)
             {
                 serviceTasks = serviceTasks.Where(t =>
-                t.Status != ServiceTaskStatus.Draft &&
-                t.Status != ServiceTaskStatus.Completed &&
-                t.Status != ServiceTaskStatus.Cancelled);
+                    t.Status != ServiceTaskStatus.Draft &&
+                    t.Status != ServiceTaskStatus.Completed &&
+                    t.Status != ServiceTaskStatus.Cancelled);
             }
 
             return await serviceTasks.ToListAsync();

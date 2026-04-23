@@ -193,14 +193,13 @@ namespace RepairWorkshop.BLL.Services
 
             if (activeOnly)
             {
-                repairItems.Where(r => r.Status != RepairItemStatus.Draft &&
+                repairItems = repairItems.Where(r => r.Status != RepairItemStatus.Draft &&
                     r.Status != RepairItemStatus.Completed &&
                     r.Status != RepairItemStatus.Cancelled &&
-                    r.Status != RepairItemStatus.WaitingForPickUp)
-                    .Distinct();
+                    r.Status != RepairItemStatus.WaitingForPickUp);
             }
 
-            return await repairItems.ToListAsync();
+            return await repairItems.Distinct().ToListAsync();
         }
     }
 }

@@ -95,7 +95,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("edit-role-permission/{id}")]
+        [HttpPatch("edit-role-permission/")]
         [HasPermission("ROLE_PERMISSION_EDIT")]
         public async Task<IActionResult> EditrolePermission(int userRoleId, int permissionId, [FromBody] EditRolePermissionDto dto)
         {
