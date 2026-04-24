@@ -19,16 +19,16 @@ namespace RepairWorkShop.DAL
         public AppDbContext(DbContextOptions<AppDbContext> options)
            : base(options)
         {
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
+            //var folder = Environment.SpecialFolder.LocalApplicationData;
+            //var path = Environment.GetFolderPath(folder);
 
-            DbPath = System.IO.Path.Join(path, "app.db");
+            //DbPath = System.IO.Path.Join(path, "app.db");
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlite($"Data Source={DbPath}");
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{ 
+        //    optionsBuilder.UseSqlite($"Data Source={DbPath}");
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

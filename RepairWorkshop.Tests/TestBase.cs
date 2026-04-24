@@ -8,15 +8,10 @@ namespace RepairWorkshop.Tests
         protected AppDbContext GetDbContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseSqlite("DataSource=:memory:")
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
-            var context = new AppDbContext(options);
-
-            context.Database.OpenConnection();
-            context.Database.EnsureCreated();
-
-            return context;
+            return new AppDbContext(options);
         }
     }
 }

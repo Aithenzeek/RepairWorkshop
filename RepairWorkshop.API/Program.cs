@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.API.Extensions;
+using RepairWorkShop.DAL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,15 @@ builder.Services
     .AddSwagger()
     .AddAuth()
     .AddPermission();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    var path = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "app.db");
+
+    options.UseSqlite($"Data Source={path}");
+});
 
 var app = builder.Build();
 
