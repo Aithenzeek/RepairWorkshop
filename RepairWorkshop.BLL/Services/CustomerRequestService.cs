@@ -13,7 +13,7 @@ namespace RepairWorkshop.BLL.Services
         AppDbContext context
     ) : ICustomerRequestService
     {
-        public async Task<CustomerRequest> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto)
+        public async Task<CustomerRequest> CreateRequest(CreateCustomerRequestDto dto)
         {
             var customerRequest = new CustomerRequest
             {
@@ -38,9 +38,6 @@ namespace RepairWorkshop.BLL.Services
 
             if (request.Status != RequestStatus.Draft)
                 throw new ConflictException("Only draft can be deleted");
-
-            //if (request.RepairItems.Any())
-            //    throw new ConflictException("Cannot delete object with subobjects");
 
             context.Requests.Remove(request);
 
@@ -175,19 +172,5 @@ namespace RepairWorkshop.BLL.Services
 
             return request;
         }
-        //public async Task<CustomerRequest> AddItem(int id)
-        //{
-        //    var request = await context.Requests.FindAsync(id);
-
-        //    if (request == null)
-        //        throw new NotFoundException("Request not found");
-
-        //    if (request.Status == RequestStatus.Draft)
-        //        throw new ConflictException("Not allowed in draft");
-
-        //    var repairItem = await context.RepairItems.FindAsync(id);
-
-        //    request.RepairItems.Add
-        //}
     }
 }

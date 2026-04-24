@@ -79,9 +79,6 @@ namespace RepairWorkshop.BLL.Services
         {
             var checkedPhone = new string(phone.Where(char.IsDigit).ToArray());
 
-            //if (checkedPhone.Length != 10)
-            //    throw new BadRequestException("Phone not valid");
-
             if (checkedPhone.Length == 12 && checkedPhone.StartsWith("380"))
                 return checkedPhone;
 

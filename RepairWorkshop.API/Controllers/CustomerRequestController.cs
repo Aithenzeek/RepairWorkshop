@@ -12,7 +12,7 @@ namespace RepairWorkshop.API.Controllers
     ) : ControllerBase
     {
         [HttpGet("get-all")]
-        [HasPermission("REQUEST_EDIT")]
+        [HasPermission("REQUEST_READ")]
         public async Task<IActionResult> GetRequests()
         {
             var requests = await service.GetAllRequests();
@@ -21,7 +21,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpGet("get-by-id/{id}")]
-        [HasPermission("REQUEST_EDIT")]
+        [HasPermission("REQUEST_READ")]
         public async Task<IActionResult> GetRequest(int id)
         {
             var request = await service.GetRequestById(id);

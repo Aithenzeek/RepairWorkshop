@@ -1,15 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using RepairWorkshop.API.Authorization;
-using RepairWorkshop.API.Exceptions;
 using RepairWorkshop.API.Extensions;
-using RepairWorkshop.BLL.Interfaces;
-using RepairWorkshop.BLL.Services;
-using RepairWorkShop.DAL;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 

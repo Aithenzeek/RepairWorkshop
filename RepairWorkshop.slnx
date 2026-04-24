@@ -2,4 +2,5 @@
   <Project Path="RepairWorkshop.API/RepairWorkshop.API.csproj" />
   <Project Path="RepairWorkshop.BLL/RepairWorkshop.BLL.csproj" />
   <Project Path="RepairWorkShop.DAL/RepairWorkShop.DAL.csproj" />
+  <Project Path="RepairWorkshop.Tests/RepairWorkshop.Tests.csproj" Id="40720211-a9a6-4fd9-9559-f11738928bcb" />
 </Solution>
