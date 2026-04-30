@@ -20,7 +20,7 @@ namespace RepairWorkshop.BLL.Services
             var service = await context.Services.FindAsync(dto.ServiceId);
 
             if (service == null)
-                throw new NotFoundException("service not found");
+                throw new NotFoundException("Service not found");
 
             if (service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
@@ -33,7 +33,7 @@ namespace RepairWorkshop.BLL.Services
             var serviceTask = new ServiceTask
             {
                 RepairItemId = dto.RepairItemId,
-                UserId = dto.WorkerId,
+                UserId = dto.UserId,
                 ServiceId = dto.ServiceId,
                 Status = ServiceTaskStatus.Draft
             };
@@ -58,34 +58,126 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<ServiceTask> CompleteServiceTask(int id)
+        public async Task<ServiceTask> StartServiceTask(int id)
         {
             var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (serviceTask.Status == ServiceTaskStatus.Draft)
+                throw new ConflictException("Allowed only in draft");
 
-            serviceTask.Status = ServiceTaskStatus.Completed;
+            serviceTask.Status = ServiceTaskStatus.New;
 
             await context.SaveChangesAsync();
 
             return serviceTask;
         }
 
-        public async Task<ServiceTask> CancelServiceTask(int id)
+        public async Task<ServiceTask> CompleteServiceTask(int id)
+        {
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .ThenInclude(i => i.ServiceTasks)
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id)));
+
+            if (request == null)
+                throw new NotFoundException("request not found");
+
+            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id);
+
+            if (serviceTask == null)
+                throw new NotFoundException("Service task not found");
+
+            if (serviceTask.Status == ServiceTaskStatus.Draft &&
+                serviceTask.Status == ServiceTaskStatus.New &&
+                serviceTask.Status == ServiceTaskStatus.Assigned &&
+                serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
+                serviceTask.Status == ServiceTaskStatus.Cancelled
+                )
+                throw new ConflictException("Not allowed in this status");
+
+            serviceTask.Complete();
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId);
+
+            if (repairItem == null)
+                throw new NotFoundException("Repair item not found");
+
+            if (repairItem.Status != RepairItemStatus.Draft &&
+                repairItem.Status != RepairItemStatus.Approved &&
+                repairItem.Status != RepairItemStatus.New &&
+                repairItem.Status != RepairItemStatus.Assigned &&
+                repairItem.Status != RepairItemStatus.WaitingForParts &&
+                repairItem.Status != RepairItemStatus.Cancelled &&
+                repairItem.Status != RepairItemStatus.WaitingForPickUp
+                )
+                if (repairItem.ServiceTasks.All(s => s.Status == ServiceTaskStatus.Completed || s.Status == ServiceTaskStatus.Cancelled))
+                {
+                    repairItem.Complete();
+
+                    if (repairItem.Status != RepairItemStatus.Draft &&
+                        request.Status != RequestStatus.New &&
+                        request.Status != RequestStatus.WaitingForApproval &&
+                        request.Status != RequestStatus.Approved &&
+                        request.Status != RequestStatus.Cancelled &&
+                        request.Status != RequestStatus.WaitingForPickUp &&
+                        request.Status != RequestStatus.PickedUp
+                        )
+                        if (request.RepairItems.All(r => r.Status == RepairItemStatus.Completed))
+                            request.Complete();
+                }
+
+            await context.SaveChangesAsync();
+
+            return serviceTask;
+            //var serviceTask = await context.ServiceTasks.FindAsync(id);
+
+            //if (serviceTask == null)
+            //    throw new NotFoundException("Service task not found");
+
+            //if (serviceTask.Status == ServiceTaskStatus.Draft)
+            //    throw new ConflictException("Not allowed in draft");
+
+            //serviceTask.Complete();
+
+            //await context.SaveChangesAsync();
+
+            //var repairItem = await context.RepairItems.FindAsync(serviceTask.RepairItemId);
+
+            //var notCompletedServiceTask = await context.ServiceTasks.AnyAsync(s => s.RepairItemId == repairItem.Id && s.Status != ServiceTaskStatus.Completed);
+
+            //if (!notCompletedServiceTask)
+            //{
+            //    repairItem.Complete();
+
+            //    await context.SaveChangesAsync();
+
+            //    var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == repairItem.CustomerRequestId);
+
+            //    var notCompletedRepairItem = await context.RepairItems.AnyAsync(s => s.CustomerRequestId == request.Id && s.Status != RepairItemStatus.Completed);
+
+            //    if (!notCompletedRepairItem)
+            //        request.Complete();
+            //}
+
+            //await context.SaveChangesAsync();
+
+            //return serviceTask;
+        }
+
+        public async Task<ServiceTask> CancelServiceTask(int id) // TODO: треба кенсел доробити нормально
         {
             var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (serviceTask.Status == ServiceTaskStatus.Draft && serviceTask.Status == ServiceTaskStatus.Completed)
+                throw new ConflictException("Can`t cancel draft or completed service task");
 
-            serviceTask.Status = ServiceTaskStatus.Cancelled;
+            serviceTask.Cancel();
 
             await context.SaveChangesAsync();
 
@@ -94,55 +186,172 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ServiceTask> SetOnHoldServiceTask(int id)
         {
-            var serviceTask = await context.ServiceTasks.FindAsync(id);
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .ThenInclude(i => i.ServiceTasks)
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id)));
+
+            if (request == null)
+                throw new NotFoundException("request not found");
+
+            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (serviceTask.Status == ServiceTaskStatus.Draft &&
+                serviceTask.Status == ServiceTaskStatus.New &&
+                serviceTask.Status == ServiceTaskStatus.Assigned &&
+                serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
+                serviceTask.Status == ServiceTaskStatus.Cancelled &&
+                serviceTask.Status == ServiceTaskStatus.Completed
+                )
+                throw new ConflictException("Not allowed in this status");
 
-            serviceTask.Status = ServiceTaskStatus.OnHold;
+            serviceTask.SetOnHold();
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId);
+
+            if (repairItem == null)
+                throw new NotFoundException("Repair item not found");
+
+            if (repairItem.Status != RepairItemStatus.Draft &&
+                repairItem.Status != RepairItemStatus.Approved &&
+                repairItem.Status != RepairItemStatus.New &&
+                repairItem.Status != RepairItemStatus.Assigned &&   
+                repairItem.Status != RepairItemStatus.WaitingForParts &&
+                repairItem.Status != RepairItemStatus.Completed &&
+                repairItem.Status != RepairItemStatus.Cancelled &&
+                repairItem.Status != RepairItemStatus.WaitingForPickUp
+                )
+                if (repairItem.ServiceTasks.All(s => s.Status == ServiceTaskStatus.OnHold || s.Status == ServiceTaskStatus.Cancelled))
+                {
+                    repairItem.SetOnHold();
+
+                    if (repairItem.Status != RepairItemStatus.Draft &&
+                        request.Status != RequestStatus.New &&
+                        request.Status != RequestStatus.WaitingForApproval &&
+                        request.Status != RequestStatus.Approved &&
+                        request.Status != RequestStatus.Completed &&
+                        request.Status != RequestStatus.Cancelled &&
+                        request.Status != RequestStatus.WaitingForPickUp &&
+                        request.Status != RequestStatus.WaitingForParts &&
+                        request.Status != RequestStatus.PickedUp
+                        )
+                        if (request.RepairItems.All(r => r.Status == RepairItemStatus.OnHold))
+                            request.SetOnHold();
+                }
 
             await context.SaveChangesAsync();
 
             return serviceTask;
+
+            //var serviceTask = await context.ServiceTasks.FindAsync(id);
+
+            //if (serviceTask == null)
+            //    throw new NotFoundException("Service task not found");
+
+            //if (serviceTask.Status == ServiceTaskStatus.Draft)
+            //    throw new ConflictException("Not allowed in draft");
+
+            //serviceTask.SetOnHold();
+
+            //await context.SaveChangesAsync();
+
+            //return serviceTask;
         }
 
         public async Task<ServiceTask> WaitForServiceTaskParts(int id)
         {
-            var serviceTask = await context.ServiceTasks.FindAsync(id);
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .ThenInclude(i => i.ServiceTasks)
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id)));
+
+            if (request == null)
+                throw new NotFoundException("request not found");
+
+            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (serviceTask.Status == ServiceTaskStatus.Draft &&
+                serviceTask.Status == ServiceTaskStatus.New &&
+                serviceTask.Status == ServiceTaskStatus.Assigned &&
+                serviceTask.Status == ServiceTaskStatus.OnHold &&
+                serviceTask.Status == ServiceTaskStatus.Cancelled &&
+                serviceTask.Status == ServiceTaskStatus.Completed
+                )
+                throw new ConflictException("Not allowed in this status");
 
-            serviceTask.Status = ServiceTaskStatus.WaitingForParts;
+            serviceTask.WaitForParts();
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId);
+
+            if (repairItem == null)
+                throw new NotFoundException("Repair item not found");
+
+            if (repairItem.Status != RepairItemStatus.Draft &&
+                repairItem.Status != RepairItemStatus.Approved &&
+                repairItem.Status != RepairItemStatus.New &&
+                repairItem.Status != RepairItemStatus.Assigned &&
+                repairItem.Status != RepairItemStatus.OnHold &&
+                repairItem.Status != RepairItemStatus.Completed &&
+                repairItem.Status != RepairItemStatus.Cancelled &&
+                repairItem.Status != RepairItemStatus.WaitingForPickUp
+                )
+                if (repairItem.ServiceTasks.All(s => s.Status == ServiceTaskStatus.WaitingForParts || s.Status == ServiceTaskStatus.Cancelled))
+                {
+                    repairItem.WaitForParts();
+
+                    if (repairItem.Status != RepairItemStatus.Draft &&
+                        request.Status != RequestStatus.New &&
+                        request.Status != RequestStatus.WaitingForApproval &&
+                        request.Status != RequestStatus.Approved &&
+                        request.Status != RequestStatus.OnHold &&
+                        request.Status != RequestStatus.Completed &&
+                        request.Status != RequestStatus.Cancelled &&
+                        request.Status != RequestStatus.WaitingForPickUp &&
+                        request.Status != RequestStatus.PickedUp
+                        )
+                        if (request.RepairItems.All(r => r.Status == RepairItemStatus.WaitingForParts))
+                            request.WaitForParts();
+                }
 
             await context.SaveChangesAsync();
 
             return serviceTask;
+
+            //var serviceTask = await context.ServiceTasks.FindAsync(id);
+
+            //if (serviceTask == null)
+            //    throw new NotFoundException("Service task not found");
+
+            //if (serviceTask.Status == ServiceTaskStatus.Draft)
+            //    throw new ConflictException("Not allowed in draft");
+
+            //serviceTask.Status = ServiceTaskStatus.WaitingForParts;
+
+            //await context.SaveChangesAsync();
+
+            //return serviceTask;
         }
 
         public async Task<ServiceTask> EditServiceTask(int id, EditServiceTaskDto dto)
         {
-            var serviceTask = await context.ServiceTasks.FindAsync(id);
+            var serviceTask = await context.ServiceTasks.FindAsync(id) ?? throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка. Зробити шоб повтора не було
 
-            if (serviceTask == null)
-                throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка
-
-            var service = await context.Services.FindAsync(dto.ServiceId);
-
-            if (service == null)
-                throw new NotFoundException("service not found");
+            var service = await context.Services.FindAsync(dto.ServiceId) ?? throw new NotFoundException("Service not found");
 
             if (serviceTask.Service.Status == ServiceStatus.Active && service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
 
-            serviceTask.UserId = dto.WorkerId;
+            serviceTask.UserId = dto.UserId;
             serviceTask.ServiceId = dto.ServiceId;
+
+            if (serviceTask.UserId != dto.UserId && serviceTask.Status == ServiceTaskStatus.Draft)
+                serviceTask.Status = ServiceTaskStatus.Assigned;
 
             await context.SaveChangesAsync();
 

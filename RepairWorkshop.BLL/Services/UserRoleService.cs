@@ -11,6 +11,14 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<UserRole> CreateUserRole(CreateUserRoleDto dto)
         {
+            var existingUserRole = await context.UserRoles.FirstOrDefaultAsync(u => u.Name == dto.Name);
+
+            // можна так
+            //if(await context.UserRoles.AnyAsync(u => u.Name == dto.Name) != null)
+
+            if (existingUserRole != null)
+                throw new ConflictException("User role with this name exists");
+
             var userRole = new UserRole
             {
                 Name = dto.Name,
@@ -33,7 +41,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<UserRole> EditUserRole(int id, EditUserRoleDto dto)
+        public async Task<UserRole> EditUserRole(int id, EditUserRoleDto dto) // TODO:вирішити як це зробити, бо назву можна змінити, але токени збережуться якими були
         {
             var userRole = await context.UserRoles.FindAsync(id);
 

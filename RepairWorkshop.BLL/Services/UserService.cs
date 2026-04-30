@@ -4,6 +4,7 @@ using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
+using RepairWorkShop.DAL.Enums;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -11,6 +12,11 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<User> CreateUser(CreateUserDto dto)
         {
+            var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
+            if (dto.Phone == existingUser.Phone)
+                throw new ConflictException("User with this number exists");
+
             var user = new User
             {
                 Name = dto.Name,
@@ -26,21 +32,37 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeleteUser(int id)
         {
-            var user = await context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id) ?? throw new NotFoundException("User not found");
 
-            if (user == null)
-                throw new NotFoundException("User not found");
+            var existingTasks = await context.ServiceTasks.AnyAsync(t => t.UserId == id &&
+            t.Status != ServiceTaskStatus.Draft &&
+            t.Status != ServiceTaskStatus.Completed &&
+            t.Status != ServiceTaskStatus.Cancelled);
+
+            if (existingTasks)
+                throw new ConflictException("Cant delete user with active tasks");
 
             context.Users.Remove(user);
+
             await context.SaveChangesAsync();
         }
 
         public async Task<User> EditUser(int id, EditUserDto dto)
         {
-            var user = await context.Users.FindAsync(id);
+            var user = await context.Users.FindAsync(id) ?? throw new NotFoundException("User not found");
 
-            if (user == null)
-                throw new NotFoundException("User not found");
+            var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
+            if (dto.Phone == existingUser.Phone)
+                throw new ConflictException("User with this number exists");
+
+            var existingTasks = await context.ServiceTasks.AnyAsync(t => t.UserId == id &&
+            t.Status != ServiceTaskStatus.Draft &&
+            t.Status != ServiceTaskStatus.Completed &&
+            t.Status != ServiceTaskStatus.Cancelled);
+
+            if (existingTasks && user.RoleId != dto.RoleId)
+                throw new ConflictException("Cant change role of user with active tasks");
 
             user.Name = dto.Name;
             user.Phone = dto.Phone;

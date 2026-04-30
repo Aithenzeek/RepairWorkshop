@@ -21,5 +21,20 @@ namespace RepairWorkShop.DAL.Entities
         {
             Status = ServiceTaskStatus.Cancelled;
         }
+
+        public void Complete()
+        {
+            Status = ServiceTaskStatus.Completed;
+        }
+
+        public void SetOnHold()
+        {
+            Status = ServiceTaskStatus.OnHold;
+        }
+
+        public void WaitForParts()
+        {
+            Status = ServiceTaskStatus.WaitingForParts;
+        }
     }
 }

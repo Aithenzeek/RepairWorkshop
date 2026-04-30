@@ -12,6 +12,11 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<Service> CreateService(CreateServiceDto dto)
         {
+            var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
+
+            if (existingService.Name == dto.Name)
+                throw new ConflictException("Service with this name exists");
+
             var service = new Service
             {
                 Name = dto.Name,
@@ -31,7 +36,9 @@ namespace RepairWorkshop.BLL.Services
             if (service == null)
                 throw new NotFoundException("Service not found");
 
-            context.Services.Remove(service);
+            service.Status = ServiceStatus.Inactive;
+
+            //context.Services.Remove(service);
             await context.SaveChangesAsync();
         }
 
@@ -41,6 +48,11 @@ namespace RepairWorkshop.BLL.Services
 
             if (service == null)
                 throw new NotFoundException("Service not found");
+
+            var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
+
+            if (existingService.Name == dto.Name)
+                throw new ConflictException("Service with this name exists");
 
             service.Name = dto.Name;
             service.Price = dto.Price;

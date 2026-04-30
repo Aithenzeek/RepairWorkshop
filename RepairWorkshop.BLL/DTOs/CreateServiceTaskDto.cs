@@ -2,7 +2,7 @@
 {
     public record CreateServiceTaskDto(
         int RepairItemId,
-        int WorkerId, 
+        int UserId, 
         int ServiceId
     );
 }

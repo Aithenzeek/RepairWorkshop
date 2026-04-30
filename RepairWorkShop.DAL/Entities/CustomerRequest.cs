@@ -21,5 +21,20 @@ namespace RepairWorkShop.DAL.Entities
             foreach (var item in RepairItems)
                 item.Cancel();
         }
+
+        public void Complete()
+        {
+            Status = RequestStatus.Completed;
+        }
+
+        public void SetOnHold()
+        {
+            Status = RequestStatus.OnHold;
+        }
+
+        public void WaitForParts()
+        {
+            Status = RequestStatus.WaitingForParts;
+        }
     }
 }

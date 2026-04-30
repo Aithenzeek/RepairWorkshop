@@ -4,71 +4,79 @@ using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Security;
-using System.Text;
 
 namespace RepairWorkshop.BLL.Services
 {
     public class RolePermissionService(AppDbContext context) : IRolePermissionService
     {
-        public readonly AppDbContext _context = context;
-
         public async Task<RolePermission> CreateRolePermission(CreateRolePermissionDto dto)
         {
+            var existingRolePermission = await context.RolePermissions.FirstOrDefaultAsync(r =>
+            r.UserRoleId == dto.UserRoleId &&
+            r.PermissionId == dto.PermissionId);
+
+            if (existingRolePermission != null)
+                throw new ConflictException("This role permission exists");
+
             var rolePermission = new RolePermission
             {
                 UserRoleId = dto.UserRoleId,
                 PermissionId = dto.PermissionId,
             };
 
-            await _context.RolePermissions.AddAsync(rolePermission);
-            await _context.SaveChangesAsync();
+            await context.RolePermissions.AddAsync(rolePermission);
+            await context.SaveChangesAsync();
 
             return rolePermission;
         }
 
         public async Task DeleteRolePermission(int userRoleId, int permissionId)
         {
-            var rolePermission = await _context.RolePermissions
+            var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
                 r.PermissionId == permissionId);
 
             if (rolePermission == null)
                 throw new NotFoundException("role premission not found");
 
-            _context.RolePermissions.Remove(rolePermission);
-            await _context.SaveChangesAsync();
+            context.RolePermissions.Remove(rolePermission);
+            await context.SaveChangesAsync();
         }
 
-        public async Task<RolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto)
+        public async Task<RolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto) // TODO: може забрати взагалі, бо легше буде нове створити чим редагувати старе
         {
-            var rolePermission = await _context.RolePermissions
+            var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
                 r.PermissionId == permissionId);
 
             if (rolePermission == null)
                 throw new NotFoundException("role premission not found");
+
+            var existingRolePermission = await context.RolePermissions.FirstOrDefaultAsync(r =>
+            r.UserRoleId == dto.UserRoleId &&
+            r.PermissionId == dto.PermissionId);
+
+            if (existingRolePermission != null)
+                throw new ConflictException("Role permision with this user role and permission exists");
 
             rolePermission.UserRoleId = dto.UserRoleId;
             rolePermission.PermissionId = dto.PermissionId;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return rolePermission;
         }
 
         public async Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
         {
-            return await _context.RolePermissions
+            return await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
                 r.PermissionId == permissionId);
         }
 
         public async Task<List<RolePermission>> GetAllRolePermissions()
         {
-            return await _context.RolePermissions.ToListAsync();
+            return await context.RolePermissions.ToListAsync();
         }
     }
 }

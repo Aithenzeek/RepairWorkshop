@@ -46,7 +46,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.CreateServiceTask(dto);
 
-            return Ok(serviceTask);
+            return Ok();
         }
 
         [HttpDelete("delete/{id}")]
@@ -64,7 +64,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.CompleteServiceTask(id);
 
-            return Ok(serviceTask);
+            return Ok();
         }
 
         [HttpPatch("cancel")]
@@ -73,7 +73,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.CancelServiceTask(id);
 
-            return Ok(serviceTask);
+            return Ok();
         }
 
         [HttpPatch("wait-for-parts")]
@@ -82,7 +82,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.WaitForServiceTaskParts(id);
 
-            return Ok(serviceTask);
+            return Ok();
         }
 
         [HttpPatch("set-on-hold")]
@@ -91,7 +91,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.SetOnHoldServiceTask(id);
 
-            return Ok(serviceTask);
+            return Ok();
         }
 
         [HttpPatch("edit/{id}")]

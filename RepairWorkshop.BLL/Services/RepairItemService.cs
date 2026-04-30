@@ -18,7 +18,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("request not found");
 
             if (request.Status != RequestStatus.Draft)
-                throw new ConflictException("Cannot add to non-draft request");
+                throw new ConflictException("Cannot add to non-draft request"); // TODO: ше може зробити перевірку чи є такий ітем, але сенсу мало, бо він створюється тільки з статусом і ід реквеста
 
             var repairItem = new RepairItem
             {
@@ -54,10 +54,27 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
 
-            if (repairItem.Status == RepairItemStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (repairItem.Status != RepairItemStatus.Draft)
+                throw new ConflictException("Only draft can be approved");
 
-            repairItem.Status = RepairItemStatus.OnHold; //TODO: статус змінити
+            repairItem.Status = RepairItemStatus.Approved; //TODO: статус змінити(вже ніби змінив)
+
+            await context.SaveChangesAsync();
+
+            return repairItem;
+        }
+
+        public async Task<RepairItem> StartRepairItem(int id)
+        {
+            var repairItem = await context.RepairItems.FindAsync(id);
+
+            if (repairItem == null)
+                throw new NotFoundException("Repair item not found");
+
+            if (repairItem.Status == RepairItemStatus.Approved)
+                throw new ConflictException("Only approved repair item can be started");
+
+            repairItem.Status = RepairItemStatus.Approved;
 
             await context.SaveChangesAsync();
 
@@ -74,7 +91,7 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            repairItem.Status = RepairItemStatus.Completed;
+            repairItem.Complete();
 
             await context.SaveChangesAsync();
 
@@ -151,7 +168,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<RepairItem> EditRepairItem(int id, EditRepairItemDto dto)
         {
-            var serialNumber = await context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його
+            var serialNumber = await context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його(не треба міняти, нормально робе)
 
             if (serialNumber)
                 throw new ConflictException("Item with such serial number exists");

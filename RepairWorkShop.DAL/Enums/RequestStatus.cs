@@ -8,6 +8,7 @@
         Approved,
         InProgress,
         OnHold,
+        WaitingForParts,
         Completed,
         Cancelled,
         WaitingForPickUp,

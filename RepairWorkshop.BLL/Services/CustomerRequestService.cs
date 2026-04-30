@@ -52,7 +52,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Request not found");
 
             if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Request must be new or highter(not draft)");
+                throw new ConflictException("Not allowed in draft");
 
             request.Cancel();
 
@@ -71,7 +71,7 @@ namespace RepairWorkshop.BLL.Services
             if (request.Status == RequestStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            request.Status = RequestStatus.Completed;
+            request.Complete();
 
             await context.SaveChangesAsync();
 
@@ -140,19 +140,19 @@ namespace RepairWorkshop.BLL.Services
             return request;
         }
 
-        public async Task<CustomerRequest> AssingCustomer(int id, int customerId)
-        {
-            var request = await context.Requests.FindAsync(id);
+        //public async Task<CustomerRequest> AssingCustomer(int id, int customerId)
+        //{
+        //    var request = await context.Requests.FindAsync(id);
 
-            if (request == null)
-                throw new NotFoundException("Request not found");
+        //    if (request == null)
+        //        throw new NotFoundException("Request not found");
 
-            request.CustomerId = customerId;
+        //    request.CustomerId = customerId;
 
-            await context.SaveChangesAsync();
+        //    await context.SaveChangesAsync();
 
-            return request;
-        }
+        //    return request;
+        //}
         // переробити
         public async Task<CustomerRequest> StartRequest(int id)
         {

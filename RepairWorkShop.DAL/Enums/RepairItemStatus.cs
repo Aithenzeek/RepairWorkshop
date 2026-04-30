@@ -3,6 +3,7 @@
     public enum RepairItemStatus
     {
         Draft,
+        Approved,
         New,
         Assigned,
         InProgress,

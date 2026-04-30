@@ -4,6 +4,8 @@ using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
+using RepairWorkShop.DAL.Enums;
+using System.Numerics;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -38,6 +40,14 @@ namespace RepairWorkshop.BLL.Services
             if (customer == null)
                 throw new NotFoundException("Customer not found");
 
+            var requests = await context.Requests.AnyAsync(r => r.CustomerId == id &&
+            r.Status != RequestStatus.Draft &&
+            r.Status != RequestStatus.Completed &&
+            r.Status != RequestStatus.Completed &&
+            r.Status != RequestStatus.PickedUp);
+
+            if (requests == true)
+                throw new ConflictException("Cant delete customer with active requests");
 
             context.Customers.Remove(customer);
 
@@ -52,6 +62,11 @@ namespace RepairWorkshop.BLL.Services
 
             if (customer == null)
                 throw new NotFoundException("Customer not found");
+
+            var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == formattedPhone);
+
+            if (existingCustomer != null)
+                throw new ConflictException("Customer with this number exists");
 
             customer.Name = dto.Name;
             customer.Phone = formattedPhone;

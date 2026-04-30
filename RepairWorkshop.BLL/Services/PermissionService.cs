@@ -4,9 +4,6 @@ using RepairWorkshop.BLL.Exceptions;
 using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -14,6 +11,11 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<Permission> CreatePermission(CreatePermissionDto dto)
         {
+            var existingPermission = await context.Permissions.FirstOrDefaultAsync(p => p.Name == dto.Name);
+
+            if (existingPermission.Name == dto.Name || existingPermission.Code == dto.Code)
+                throw new ConflictException("Permission with this parameters exists");
+
             var permission = new Permission
             {
                 Name = dto.Name,
@@ -43,6 +45,11 @@ namespace RepairWorkshop.BLL.Services
 
             if (permission == null)
                 throw new NotFoundException("premission not found");
+
+            var existingPermission = await context.Permissions.FirstOrDefaultAsync(p => p.Name == dto.Name);
+
+            if (existingPermission.Name == dto.Name || existingPermission.Code == dto.Code)
+                throw new ConflictException("Permission with this parameters exists");
 
             permission.Name = dto.Name;
             permission.Code = dto.Code;
