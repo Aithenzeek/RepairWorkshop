@@ -78,22 +78,22 @@ namespace RepairWorkshop.BLL.Services
             return request;
         }
 
-        public async Task<CustomerRequest> ApproveRequest(int id)
-        {
-            var request = await context.Requests.FindAsync(id);
+        //public async Task<CustomerRequest> ApproveRequest(int id)
+        //{
+        //    var request = await context.Requests.FindAsync(id);
 
-            if (request == null)
-                throw new NotFoundException("Request not found");
+        //    if (request == null)
+        //        throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+        //    if (request.Status == RequestStatus.Draft)
+        //        throw new ConflictException("Not allowed in draft");
 
-            request.Status = RequestStatus.Approved;
+        //    request.Status = RequestStatus.Approved;
 
-            await context.SaveChangesAsync();
+        //    await context.SaveChangesAsync();
 
-            return request;
-        }
+        //    return request;
+        //}
 
         public async Task<CustomerRequest> AllowPickUp(int id)
         {

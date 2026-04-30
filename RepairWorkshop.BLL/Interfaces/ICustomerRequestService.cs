@@ -9,7 +9,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task DeleteRequest(int id);
         public Task<CustomerRequest> CancelRequest(int id);
         public Task<CustomerRequest> CompleteRequest(int id);
-        public Task<CustomerRequest> ApproveRequest(int id);
+        //public Task<CustomerRequest> ApproveRequest(int id);
         public Task<CustomerRequest> AllowPickUp(int id);
         public Task<CustomerRequest?> GetRequestById(int id);
         public Task<List<CustomerRequest>> GetAllRequests();

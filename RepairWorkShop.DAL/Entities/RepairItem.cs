@@ -21,6 +21,7 @@ namespace RepairWorkShop.DAL.Entities
         public void Cancel()
         {
             Status = RepairItemStatus.Cancelled;
+            CompletedAt = DateTime.Now;
 
             foreach (var task in ServiceTasks)
                 task.Cancel();
@@ -28,7 +29,8 @@ namespace RepairWorkShop.DAL.Entities
 
         public void Complete()
         {
-            Status = RepairItemStatus.Completed;
+            Status = RepairItemStatus.CompletedByTechnician;
+            CompletedAt = DateTime.Now;
         }
 
         public void SetOnHold()
@@ -39,6 +41,14 @@ namespace RepairWorkShop.DAL.Entities
         public void WaitForParts()
         {
             Status = RepairItemStatus.WaitingForParts;
+        }
+
+        public void GetServiceCost()
+        {
+            ServiceCost = 0;
+
+            foreach (var serviceTask in ServiceTasks)
+                ServiceCost += serviceTask.Cost ?? 0;
         }
     }
 }

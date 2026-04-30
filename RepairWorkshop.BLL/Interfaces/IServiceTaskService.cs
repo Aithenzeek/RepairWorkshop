@@ -7,7 +7,8 @@ namespace RepairWorkshop.BLL.Interfaces
     {
         public Task<ServiceTask> CreateServiceTask(CreateServiceTaskDto dto);
         public Task DeleteServiceTask(int id);
-        public Task<ServiceTask> CompleteServiceTask(int id);
+        public Task<ServiceTask> StartServiceTask(int id);
+        public Task<ServiceTask> CompleteServiceTask(CompleteServiceTaskDto dto);
         public Task<ServiceTask> CancelServiceTask(int id);
         public Task<ServiceTask> SetOnHoldServiceTask(int id);
         public Task<ServiceTask> WaitForServiceTaskParts(int id);

@@ -12,6 +12,7 @@ namespace RepairWorkShop.DAL.Entities
         public ServiceTaskStatus Status { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public string? DiagnosticsResult { get; set; }
 
         public Service Service { get; set; } = null!;
         public RepairItem RepairItem { get; set; } = null!;
@@ -20,11 +21,13 @@ namespace RepairWorkShop.DAL.Entities
         public void Cancel()
         {
             Status = ServiceTaskStatus.Cancelled;
+            CompletedAt = DateTime.Now;
         }
 
         public void Complete()
         {
             Status = ServiceTaskStatus.Completed;
+            CompletedAt = DateTime.Now;
         }
 
         public void SetOnHold()

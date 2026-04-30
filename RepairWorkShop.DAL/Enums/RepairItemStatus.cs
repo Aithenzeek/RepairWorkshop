@@ -3,12 +3,11 @@
     public enum RepairItemStatus
     {
         Draft,
-        Approved,
         New,
-        Assigned,
         InProgress,
         OnHold,
         WaitingForParts,
+        CompletedByTechnician,
         Completed,
         Cancelled,
         WaitingForPickUp

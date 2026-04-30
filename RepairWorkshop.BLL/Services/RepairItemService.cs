@@ -47,22 +47,22 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<RepairItem> ApproveRepairItem(int id)
-        {
-            var repairItem = await context.RepairItems.FindAsync(id);
+        //public async Task<RepairItem> ApproveRepairItem(int id)
+        //{
+        //    var repairItem = await context.RepairItems.FindAsync(id);
 
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
+        //    if (repairItem == null)
+        //        throw new NotFoundException("Repair item not found");
 
-            if (repairItem.Status != RepairItemStatus.Draft)
-                throw new ConflictException("Only draft can be approved");
+        //    if (repairItem.Status != RepairItemStatus.Draft)
+        //        throw new ConflictException("Only draft can be approved");
 
-            repairItem.Status = RepairItemStatus.Approved; //TODO: статус змінити(вже ніби змінив)
+        //    repairItem.Status = RepairItemStatus.Approved; //TODO: статус змінити(вже ніби змінив)
 
-            await context.SaveChangesAsync();
+        //    await context.SaveChangesAsync();
 
-            return repairItem;
-        }
+        //    return repairItem;
+        //}
 
         public async Task<RepairItem> StartRepairItem(int id)
         {
@@ -71,10 +71,10 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
 
-            if (repairItem.Status == RepairItemStatus.Approved)
-                throw new ConflictException("Only approved repair item can be started");
+            //if (repairItem.Status == RepairItemStatus.Approved)
+            //    throw new ConflictException("Only approved repair item can be started");
 
-            repairItem.Status = RepairItemStatus.Approved;
+            repairItem.Status = RepairItemStatus.New;
 
             await context.SaveChangesAsync();
 

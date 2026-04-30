@@ -4,7 +4,6 @@
     {
         Draft,
         New,
-        Assigned,
         InProgress,
         OnHold,
         WaitingForParts,

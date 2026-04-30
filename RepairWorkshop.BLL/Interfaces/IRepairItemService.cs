@@ -7,7 +7,7 @@ namespace RepairWorkshop.BLL.Interfaces
     {
         public Task<RepairItem> CreateRepairItem(CreateRepairItemDto dto);
         public Task DeleteRepairItem(int id);
-        public Task<RepairItem> ApproveRepairItem(int id);
+        //public Task<RepairItem> ApproveRepairItem(int id);
         public Task<RepairItem> CompleteRepairItem(int id);
         public Task<RepairItem> CancelRepairItem(int id);
         public Task<RepairItem> AllowPickUpRepairItem(int id);

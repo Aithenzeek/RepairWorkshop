@@ -4,8 +4,6 @@
     {
         Draft,
         New,
-        WaitingForApproval,
-        Approved,
         InProgress,
         OnHold,
         WaitingForParts,

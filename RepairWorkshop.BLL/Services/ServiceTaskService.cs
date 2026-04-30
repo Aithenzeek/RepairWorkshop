@@ -35,8 +35,12 @@ namespace RepairWorkshop.BLL.Services
                 RepairItemId = dto.RepairItemId,
                 UserId = dto.UserId,
                 ServiceId = dto.ServiceId,
+                Cost = service.Price,
                 Status = ServiceTaskStatus.Draft
             };
+
+            if (existingRepairItem.Status == RepairItemStatus.CompletedByTechnician)
+                existingRepairItem.Status = RepairItemStatus.InProgress;
 
             await context.ServiceTasks.AddAsync(serviceTask);
             await context.SaveChangesAsync();
@@ -60,43 +64,71 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ServiceTask> StartServiceTask(int id)
         {
-            var serviceTask = await context.ServiceTasks.FindAsync(id);
-
-            if (serviceTask == null)
-                throw new NotFoundException("Service task not found");
-
-            if (serviceTask.Status == ServiceTaskStatus.Draft)
-                throw new ConflictException("Allowed only in draft");
-
-            serviceTask.Status = ServiceTaskStatus.New;
-
-            await context.SaveChangesAsync();
-
-            return serviceTask;
-        }
-
-        public async Task<ServiceTask> CompleteServiceTask(int id)
-        {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
                 .ThenInclude(i => i.ServiceTasks)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id)));
 
             if (request == null)
-                throw new NotFoundException("request not found");
+                throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
+            if (serviceTask.Status != ServiceTaskStatus.Draft)
+                throw new ConflictException("Allowed only in draft");
+
+            serviceTask.Status = ServiceTaskStatus.New;
+            serviceTask.StartedAt = DateTime.Now;
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId);
+
+            if (repairItem == null)
+                throw new NotFoundException("Repair item not found");
+
+            if (repairItem.StartedAt == null) // TODO: переробити
+            {
+                repairItem.Status = RepairItemStatus.New;
+                repairItem.StartedAt = serviceTask.StartedAt;
+            }
+
+            if (request.StartedAt == null)
+            {
+                request.Status = RequestStatus.New;
+                request.StartedAt = repairItem.StartedAt;
+            }
+
+            await context.SaveChangesAsync();
+
+            return serviceTask;
+        }
+
+        public async Task<ServiceTask> CompleteServiceTask(CompleteServiceTaskDto dto)
+        {
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .ThenInclude(i => i.ServiceTasks)
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == dto.id)));
+
+            if (request == null)
+                throw new NotFoundException("Request not found");
+
+            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == dto.id);
+
+            if (serviceTask == null)
+                throw new NotFoundException("Service task not found");
+
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
-                serviceTask.Status == ServiceTaskStatus.Assigned &&
                 serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
                 serviceTask.Status == ServiceTaskStatus.Cancelled
                 )
                 throw new ConflictException("Not allowed in this status");
+
+            if (context.Services.Any(s => s.Name == "Diagnostics" && s.Id == serviceTask.ServiceId))
+                serviceTask.DiagnosticsResult = dto.DiagnosticsResult;
 
             serviceTask.Complete();
 
@@ -106,9 +138,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status != RepairItemStatus.Draft &&
-                repairItem.Status != RepairItemStatus.Approved &&
                 repairItem.Status != RepairItemStatus.New &&
-                repairItem.Status != RepairItemStatus.Assigned &&
                 repairItem.Status != RepairItemStatus.WaitingForParts &&
                 repairItem.Status != RepairItemStatus.Cancelled &&
                 repairItem.Status != RepairItemStatus.WaitingForPickUp
@@ -116,17 +146,19 @@ namespace RepairWorkshop.BLL.Services
                 if (repairItem.ServiceTasks.All(s => s.Status == ServiceTaskStatus.Completed || s.Status == ServiceTaskStatus.Cancelled))
                 {
                     repairItem.Complete();
+                    repairItem.GetServiceCost();
 
                     if (repairItem.Status != RepairItemStatus.Draft &&
                         request.Status != RequestStatus.New &&
-                        request.Status != RequestStatus.WaitingForApproval &&
-                        request.Status != RequestStatus.Approved &&
                         request.Status != RequestStatus.Cancelled &&
                         request.Status != RequestStatus.WaitingForPickUp &&
                         request.Status != RequestStatus.PickedUp
                         )
-                        if (request.RepairItems.All(r => r.Status == RepairItemStatus.Completed))
+                        if (request.RepairItems.All(r => r.Status == RepairItemStatus.CompletedByTechnician))
+                        {
                             request.Complete();
+                            request.GetTotalCost();
+                        }
                 }
 
             await context.SaveChangesAsync();
@@ -201,7 +233,6 @@ namespace RepairWorkshop.BLL.Services
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
-                serviceTask.Status == ServiceTaskStatus.Assigned &&
                 serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
                 serviceTask.Status == ServiceTaskStatus.Cancelled &&
                 serviceTask.Status == ServiceTaskStatus.Completed
@@ -216,9 +247,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status != RepairItemStatus.Draft &&
-                repairItem.Status != RepairItemStatus.Approved &&
                 repairItem.Status != RepairItemStatus.New &&
-                repairItem.Status != RepairItemStatus.Assigned &&   
                 repairItem.Status != RepairItemStatus.WaitingForParts &&
                 repairItem.Status != RepairItemStatus.Completed &&
                 repairItem.Status != RepairItemStatus.Cancelled &&
@@ -230,8 +259,6 @@ namespace RepairWorkshop.BLL.Services
 
                     if (repairItem.Status != RepairItemStatus.Draft &&
                         request.Status != RequestStatus.New &&
-                        request.Status != RequestStatus.WaitingForApproval &&
-                        request.Status != RequestStatus.Approved &&
                         request.Status != RequestStatus.Completed &&
                         request.Status != RequestStatus.Cancelled &&
                         request.Status != RequestStatus.WaitingForPickUp &&
@@ -278,7 +305,6 @@ namespace RepairWorkshop.BLL.Services
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
-                serviceTask.Status == ServiceTaskStatus.Assigned &&
                 serviceTask.Status == ServiceTaskStatus.OnHold &&
                 serviceTask.Status == ServiceTaskStatus.Cancelled &&
                 serviceTask.Status == ServiceTaskStatus.Completed
@@ -293,9 +319,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status != RepairItemStatus.Draft &&
-                repairItem.Status != RepairItemStatus.Approved &&
                 repairItem.Status != RepairItemStatus.New &&
-                repairItem.Status != RepairItemStatus.Assigned &&
                 repairItem.Status != RepairItemStatus.OnHold &&
                 repairItem.Status != RepairItemStatus.Completed &&
                 repairItem.Status != RepairItemStatus.Cancelled &&
@@ -307,8 +331,6 @@ namespace RepairWorkshop.BLL.Services
 
                     if (repairItem.Status != RepairItemStatus.Draft &&
                         request.Status != RequestStatus.New &&
-                        request.Status != RequestStatus.WaitingForApproval &&
-                        request.Status != RequestStatus.Approved &&
                         request.Status != RequestStatus.OnHold &&
                         request.Status != RequestStatus.Completed &&
                         request.Status != RequestStatus.Cancelled &&
@@ -349,9 +371,6 @@ namespace RepairWorkshop.BLL.Services
 
             serviceTask.UserId = dto.UserId;
             serviceTask.ServiceId = dto.ServiceId;
-
-            if (serviceTask.UserId != dto.UserId && serviceTask.Status == ServiceTaskStatus.Draft)
-                serviceTask.Status = ServiceTaskStatus.Assigned;
 
             await context.SaveChangesAsync();
 

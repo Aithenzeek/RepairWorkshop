@@ -42,7 +42,7 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPost("create")]
         [HasPermission("SERVICE_TASK_CREATE")]
-        public async Task<IActionResult> CreateserviceTask([FromBody] CreateServiceTaskDto dto)
+        public async Task<IActionResult> CreateServiceTask([FromBody] CreateServiceTaskDto dto)
         {
             var serviceTask = await service.CreateServiceTask(dto);
 
@@ -51,25 +51,34 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpDelete("delete/{id}")]
         [HasPermission("SERVICE_TASK_DELETE")]
-        public async Task<IActionResult> DeleteserviceTask(int id)
+        public async Task<IActionResult> DeleteServiceTask(int id)
         {
             await service.DeleteServiceTask(id);
 
             return Ok();
         }
 
+        [HttpPatch("start")]
+        [HasPermission("SERVICE_TASK_EDIT")]
+        public async Task<IActionResult> StartServiceTask([FromBody] int id)
+        {
+            var serviceTask = await service.StartServiceTask(id);
+
+            return Ok();
+        }
+
         [HttpPatch("complete")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> CompleteserviceTask([FromBody] int id)
+        public async Task<IActionResult> CompleteServiceTask([FromBody] CompleteServiceTaskDto dto)
         {
-            var serviceTask = await service.CompleteServiceTask(id);
+            var serviceTask = await service.CompleteServiceTask(dto);
 
             return Ok();
         }
 
         [HttpPatch("cancel")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> CancelserviceTask([FromBody] int id)
+        public async Task<IActionResult> CancelServiceTask([FromBody] int id)
         {
             var serviceTask = await service.CancelServiceTask(id);
 
@@ -78,7 +87,7 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("wait-for-parts")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> WaitForserviceTaskParts([FromBody] int id)
+        public async Task<IActionResult> WaitForServiceTaskParts([FromBody] int id)
         {
             var serviceTask = await service.WaitForServiceTaskParts(id);
 
@@ -87,7 +96,7 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("set-on-hold")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> SetOnHoldserviceTask([FromBody] int id)
+        public async Task<IActionResult> SetOnHoldServiceTask([FromBody] int id)
         {
             var serviceTask = await service.SetOnHoldServiceTask(id);
 
@@ -96,7 +105,7 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("edit/{id}")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> EditserviceTask(int id, [FromBody] EditServiceTaskDto dto)
+        public async Task<IActionResult> EditServiceTask(int id, [FromBody] EditServiceTaskDto dto)
         {
             var serviceTask = await service.EditServiceTask(id, dto);
 
