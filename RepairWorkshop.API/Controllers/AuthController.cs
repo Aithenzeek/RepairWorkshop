@@ -12,12 +12,12 @@ namespace RepairWorkshop.API.Controllers
     public class AuthController(IUserService userService) : ControllerBase
     {
         [HttpPost("login")]
-        public async Task<IActionResult> Login(string phone)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = await userService.GetUserByPhone(phone);
+            var user = await userService.GetUserByPhone(request.Phone);
 
             if (user == null)
-                return NotFound();
+                return NotFound("User not found");
 
             var permissions = user.Role.RolePermissions
                 .Select(rp => rp.Permission.Code)
@@ -51,5 +51,10 @@ namespace RepairWorkshop.API.Controllers
                 token = new JwtSecurityTokenHandler().WriteToken(token)
             });
         }
+    }
+
+    public class LoginRequest
+    {
+        public string Phone { get; set; }
     }
 }
