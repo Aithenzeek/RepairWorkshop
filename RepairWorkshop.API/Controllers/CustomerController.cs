@@ -51,7 +51,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var customer = await service.EditCustomer(id, dto);
 
-            return Ok();
+            return Ok(customer);
         }
     }
 }

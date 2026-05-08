@@ -43,6 +43,19 @@ namespace RepairWorkShop.DAL.Entities
             Status = RepairItemStatus.WaitingForParts;
         }
 
+        public void AllowPickUp()
+        {
+            Status = RepairItemStatus.WaitingForPickUp;
+        }
+
+        public void Start()
+        {
+            Status = RepairItemStatus.New;
+
+            foreach (var task in ServiceTasks)
+                task.Status = ServiceTaskStatus.OnHold;
+        }
+
         public void GetServiceCost()
         {
             ServiceCost = 0;

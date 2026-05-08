@@ -46,7 +46,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.CreateServiceTask(dto);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
         [HttpDelete("delete/{id}")]
@@ -58,13 +58,13 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("start")]
+        [HttpPatch("start/{id}")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> StartServiceTask([FromBody] int id)
+        public async Task<IActionResult> StartServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.StartServiceTask(id);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
         [HttpPatch("complete")]
@@ -73,34 +73,34 @@ namespace RepairWorkshop.API.Controllers
         {
             var serviceTask = await service.CompleteServiceTask(dto);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
-        [HttpPatch("cancel")]
+        [HttpPatch("cancel/{id}")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> CancelServiceTask([FromBody] int id)
+        public async Task<IActionResult> CancelServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.CancelServiceTask(id);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
-        [HttpPatch("wait-for-parts")]
+        [HttpPatch("wait-for-parts/{id}")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> WaitForServiceTaskParts([FromBody] int id)
+        public async Task<IActionResult> WaitForServiceTaskParts([FromRoute] int id)
         {
             var serviceTask = await service.WaitForServiceTaskParts(id);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
-        [HttpPatch("set-on-hold")]
+        [HttpPatch("set-on-hold/{id}")]
         [HasPermission("SERVICE_TASK_EDIT")]
-        public async Task<IActionResult> SetOnHoldServiceTask([FromBody] int id)
+        public async Task<IActionResult> SetOnHoldServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.SetOnHoldServiceTask(id);
 
-            return Ok();
+            return Ok(serviceTask);
         }
 
         [HttpPatch("edit/{id}")]

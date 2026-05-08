@@ -21,6 +21,10 @@ namespace RepairWorkShop.DAL.Entities
         public void Cancel()
         {
             Status = ServiceTaskStatus.Cancelled;
+
+            if (StartedAt == null)
+                StartedAt = DateTime.Now;
+
             CompletedAt = DateTime.Now;
         }
 
@@ -38,6 +42,11 @@ namespace RepairWorkShop.DAL.Entities
         public void WaitForParts()
         {
             Status = ServiceTaskStatus.WaitingForParts;
+        }
+
+        public void Start()
+        {
+            Status = ServiceTaskStatus.InProgress;
         }
     }
 }

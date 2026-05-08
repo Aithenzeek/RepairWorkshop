@@ -10,9 +10,9 @@ namespace RepairWorkshop.BLL.Services
 {
     public class RepairItemService(AppDbContext context) : IRepairItemService
     {
-        public async Task<RepairItem> CreateRepairItem(CreateRepairItemDto dto)
+        public async Task<ResponseRepairItemDto> CreateRepairItem(CreateRepairItemDto dto)
         {
-            var request = await context.Requests.FindAsync(dto.requestId);
+            var request = await context.Requests.FindAsync(dto.CustomerRequestId);
 
             if (request == null)
                 throw new NotFoundException("request not found");
@@ -22,14 +22,14 @@ namespace RepairWorkshop.BLL.Services
 
             var repairItem = new RepairItem
             {
-                CustomerRequestId = dto.requestId,
+                CustomerRequestId = dto.CustomerRequestId,
                 Status = RepairItemStatus.Draft,
             };
 
             await context.RepairItems.AddAsync(repairItem);
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
         public async Task DeleteRepairItem(int id)
@@ -64,24 +64,26 @@ namespace RepairWorkshop.BLL.Services
         //    return repairItem;
         //}
 
-        public async Task<RepairItem> StartRepairItem(int id)
+        public async Task<ResponseRepairItemDto> StartRepairItem(int id)
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
+            var request = await context.Requests.Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("Request not found");
 
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
 
             //if (repairItem.Status == RepairItemStatus.Approved)
             //    throw new ConflictException("Only approved repair item can be started");
 
-            repairItem.Status = RepairItemStatus.New;
+            repairItem.Start();
+
+            if (request.RepairItems.Any(r => r.Status == RepairItemStatus.New))
+                request.Status = RequestStatus.New;
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> CompleteRepairItem(int id)
+        public async Task<ResponseRepairItemDto> CompleteRepairItem(int id)
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -95,10 +97,10 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> CancelRepairItem(int id)
+        public async Task<ResponseRepairItemDto> CancelRepairItem(int id)
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -112,27 +114,29 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> AllowPickUpRepairItem(int id)
+        public async Task<ResponseRepairItemDto> AllowPickUpRepairItem(int id)
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
+            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("Request not found");
 
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            repairItem.Status = RepairItemStatus.WaitingForPickUp;
+            repairItem.AllowPickUp();
+
+            if (request.RepairItems.Any(r => r.Status == RepairItemStatus.WaitingForPickUp))
+                request.Status = RequestStatus.WaitingForPickUp;
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> WaitForRepairItemParts(int id)
+        public async Task<ResponseRepairItemDto> WaitForRepairItemParts(int id)
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -146,10 +150,10 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> SetOnHoldRepairItemWork(int id)
+        public async Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id)
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -163,10 +167,10 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem> EditRepairItem(int id, EditRepairItemDto dto)
+        public async Task<ResponseRepairItemDto> EditRepairItem(int id, EditRepairItemDto dto)
         {
             var serialNumber = await context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його(не треба міняти, нормально робе)
 
@@ -185,7 +189,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return repairItem;
+            return ReturnDto(repairItem);
         }
 
         public async Task<RepairItem?> GetRepairItemById(int id)
@@ -213,10 +217,27 @@ namespace RepairWorkshop.BLL.Services
                 repairItems = repairItems.Where(r => r.Status != RepairItemStatus.Draft &&
                     r.Status != RepairItemStatus.Completed &&
                     r.Status != RepairItemStatus.Cancelled &&
+                    r.Status != RepairItemStatus.CompletedByTechnician &&
                     r.Status != RepairItemStatus.WaitingForPickUp);
             }
 
             return await repairItems.Distinct().ToListAsync();
+        }
+
+        public ResponseRepairItemDto ReturnDto(RepairItem repairItem)
+        {
+            return new ResponseRepairItemDto(
+                repairItem.Id,
+                repairItem.CustomerRequestId,
+                repairItem.Model,
+                repairItem.SerialNumber,
+                repairItem.ProblemDescription,
+                repairItem.Notes,
+                repairItem.Status,
+                repairItem.ServiceCost,
+                repairItem.StartedAt,
+                repairItem.CompletedAt
+            );
         }
     }
 }

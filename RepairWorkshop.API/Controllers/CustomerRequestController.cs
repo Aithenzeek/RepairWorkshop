@@ -38,7 +38,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
-        [HttpDelete("delete{id}")]
+        [HttpDelete("delete/{id}")]
         [HasPermission("REQUEST_DELETE")]
         public async Task<IActionResult> DeleteRequest([FromRoute] int id)
         {
@@ -47,18 +47,18 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("complete")]
+        [HttpPatch("complete/{id}")]
         [HasPermission("REQUEST_EDIT")]
-        public async Task<IActionResult> CompleteRequest([FromBody] int id)
+        public async Task<IActionResult> CompleteRequest([FromRoute] int id)
         {
             var request = await service.CompleteRequest(id);
 
             return Ok(request);
         }
 
-        [HttpPatch("cancel")]
+        [HttpPatch("cancel/{id}")]
         [HasPermission("REQUEST_EDIT")]
-        public async Task<IActionResult> CancellRequest([FromBody] int id)
+        public async Task<IActionResult> CancellRequest([FromRoute] int id)
         {
             var request = await service.CancelRequest(id);
 
@@ -74,9 +74,9 @@ namespace RepairWorkshop.API.Controllers
         //    return Ok(request);
         //}
 
-        [HttpPatch("allow")]
+        [HttpPatch("allow/{id}")]
         [HasPermission("REQUEST_EDIT")]
-        public async Task<IActionResult> AllowPickUp([FromBody] int id)
+        public async Task<IActionResult> AllowPickUp([FromRoute] int id)
         {
             var request = await service.AllowPickUp(id);
 
@@ -94,7 +94,7 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("start/{id}")]
         [HasPermission("REQUEST_EDIT")]
-        public async Task<IActionResult> StartRequest([FromBody] int id)
+        public async Task<IActionResult> StartRequest([FromRoute] int id)
         {
             var request = await service.StartRequest(id);
 

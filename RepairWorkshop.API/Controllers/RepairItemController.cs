@@ -46,7 +46,7 @@ namespace RepairWorkshop.API.Controllers
         {
             var repairItem = await service.CreateRepairItem(dto);
 
-            return Ok(/*repairItem*/);
+            return Ok(repairItem);
         }
 
         [HttpDelete("delete/{id}")]
@@ -58,18 +58,27 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("complete")]
+        [HttpPatch("start/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> CompleteRepairItem([FromBody] int id)
+        public async Task<IActionResult> StartRepairItem([FromRoute] int id)
+        {
+            var repairItem = await service.StartRepairItem(id);
+
+            return Ok(repairItem);
+        }
+
+        [HttpPatch("complete/{id}")]
+        [HasPermission("REPAIR_ITEM_EDIT")]
+        public async Task<IActionResult> CompleteRepairItem([FromRoute] int id)
         {
             var repairItem = await service.CompleteRepairItem(id);
 
             return Ok(repairItem);
         }
 
-        [HttpPatch("cancel")]
+        [HttpPatch("cancel/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> CancelRepairItem([FromBody] int id)
+        public async Task<IActionResult> CancelRepairItem([FromRoute] int id)
         {
             var repairItem = await service.CancelRepairItem(id);
 
@@ -85,27 +94,27 @@ namespace RepairWorkshop.API.Controllers
         //    return Ok(repairItem);
         //}
 
-        [HttpPatch("allow-pick-up")]
+        [HttpPatch("allow-pick-up/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> AllowPickUpRepairItem([FromBody] int id)
+        public async Task<IActionResult> AllowPickUpRepairItem([FromRoute] int id)
         {
             var repairItem = await service.AllowPickUpRepairItem(id);
 
             return Ok(repairItem);
         }
 
-        [HttpPatch("wait-for-parts")]
+        [HttpPatch("wait-for-parts/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> WaitForRepairItemParts([FromBody] int id)
+        public async Task<IActionResult> WaitForRepairItemParts([FromRoute] int id)
         {
             var repairItem = await service.WaitForRepairItemParts(id);
 
             return Ok(repairItem);
         }
 
-        [HttpPatch("set-on-hold")]
+        [HttpPatch("set-on-hold/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> SetOnHoldRepairItem([FromBody] int id)
+        public async Task<IActionResult> SetOnHoldRepairItem([FromRoute] int id)
         {
             var repairItem = await service.SetOnHoldRepairItemWork(id);
 

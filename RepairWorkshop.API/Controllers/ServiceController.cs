@@ -55,5 +55,23 @@ namespace RepairWorkshop.API.Controllers
 
             return Ok();
         }
+
+        [HttpPatch("activate/{id}")]
+        [HasPermission("SERVICE_EDIT")]
+        public async Task<IActionResult> ActivateService(int id)
+        {
+            var service = await _service.ActivateService(id);
+
+            return Ok();
+        }
+
+        [HttpPatch("inactivate/{id}")]
+        [HasPermission("SERVICE_EDIT")]
+        public async Task<IActionResult> InactivateService(int id)
+        {
+            var service = await _service.InactivateService(id);
+
+            return Ok();
+        }
     }
 }

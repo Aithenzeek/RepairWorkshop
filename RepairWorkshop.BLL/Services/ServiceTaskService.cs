@@ -10,9 +10,9 @@ namespace RepairWorkshop.BLL.Services
 {
     public class ServiceTaskService(AppDbContext context) : IServiceTaskService
     {
-        public async Task<ServiceTask> CreateServiceTask(CreateServiceTaskDto dto)
+        public async Task<ResponseServiceTaskDto> CreateServiceTask(CreateServiceTaskDto dto)
         {
-            var existingServiceTask = await context.ServiceTasks.FindAsync(dto.ServiceId);
+            var existingServiceTask = await context.ServiceTasks.FirstOrDefaultAsync(s => s.ServiceId == dto.ServiceId);
 
             if (existingServiceTask != null && existingServiceTask.RepairItemId == dto.RepairItemId)
                 throw new ConflictException("Task with same service exists");
@@ -28,7 +28,12 @@ namespace RepairWorkshop.BLL.Services
             var existingRepairItem = await context.RepairItems.FindAsync(dto.RepairItemId);
 
             if (existingRepairItem == null)
-                throw new NotFoundException("repair item not found");
+                throw new NotFoundException("Repair item not found");
+
+            var user = await context.Users.Include(r => r.Role).FirstOrDefaultAsync(u => u.Id == dto.UserId);
+
+            if (user != null && user.Role.Name != "Manager" && user.Role.Name != "Superadmin")
+                throw new BadRequestException("Selected user role is not manager");
 
             var serviceTask = new ServiceTask
             {
@@ -45,7 +50,7 @@ namespace RepairWorkshop.BLL.Services
             await context.ServiceTasks.AddAsync(serviceTask);
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
         }
 
         public async Task DeleteServiceTask(int id)
@@ -62,7 +67,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<ServiceTask> StartServiceTask(int id)
+        public async Task<ResponseServiceTaskDto> StartServiceTask(int id)
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
@@ -77,11 +82,13 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.Draft)
-                throw new ConflictException("Allowed only in draft");
+            if (serviceTask.Status != ServiceTaskStatus.New && serviceTask.Status != ServiceTaskStatus.OnHold)
+                throw new ConflictException("Service task must be started or on hold");
 
-            serviceTask.Status = ServiceTaskStatus.New;
-            serviceTask.StartedAt = DateTime.Now;
+            serviceTask.Status = ServiceTaskStatus.InProgress;
+
+            if (serviceTask.StartedAt == null)
+                serviceTask.StartedAt = DateTime.Now;
 
             var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId);
 
@@ -90,22 +97,22 @@ namespace RepairWorkshop.BLL.Services
 
             if (repairItem.StartedAt == null) // TODO: переробити
             {
-                repairItem.Status = RepairItemStatus.New;
+                repairItem.Status = RepairItemStatus.InProgress;
                 repairItem.StartedAt = serviceTask.StartedAt;
             }
 
             if (request.StartedAt == null)
             {
-                request.Status = RequestStatus.New;
+                request.Status = RequestStatus.InProgress;
                 request.StartedAt = repairItem.StartedAt;
             }
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
         }
 
-        public async Task<ServiceTask> CompleteServiceTask(CompleteServiceTaskDto dto)
+        public async Task<ResponseServiceTaskDto> CompleteServiceTask(CompleteServiceTaskDto dto)
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
@@ -120,9 +127,9 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status == ServiceTaskStatus.Draft &&
-                serviceTask.Status == ServiceTaskStatus.New &&
-                serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
+            if (serviceTask.Status == ServiceTaskStatus.Draft ||
+                serviceTask.Status == ServiceTaskStatus.New ||
+                serviceTask.Status == ServiceTaskStatus.WaitingForParts ||
                 serviceTask.Status == ServiceTaskStatus.Cancelled
                 )
                 throw new ConflictException("Not allowed in this status");
@@ -156,14 +163,14 @@ namespace RepairWorkshop.BLL.Services
                         )
                         if (request.RepairItems.All(r => r.Status == RepairItemStatus.CompletedByTechnician))
                         {
-                            request.Complete();
+                            request.CompleteByTechnician();
                             request.GetTotalCost();
                         }
                 }
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
             //var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             //if (serviceTask == null)
@@ -199,24 +206,24 @@ namespace RepairWorkshop.BLL.Services
             //return serviceTask;
         }
 
-        public async Task<ServiceTask> CancelServiceTask(int id) // TODO: треба кенсел доробити нормально
+        public async Task<ResponseServiceTaskDto> CancelServiceTask(int id) // TODO: треба кенсел доробити нормально
         {
             var serviceTask = await context.ServiceTasks.FindAsync(id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status == ServiceTaskStatus.Draft && serviceTask.Status == ServiceTaskStatus.Completed)
+            if (serviceTask.Status == ServiceTaskStatus.Draft || serviceTask.Status == ServiceTaskStatus.Completed)
                 throw new ConflictException("Can`t cancel draft or completed service task");
 
             serviceTask.Cancel();
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
         }
 
-        public async Task<ServiceTask> SetOnHoldServiceTask(int id)
+        public async Task<ResponseServiceTaskDto> SetOnHoldServiceTask(int id)
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
@@ -224,12 +231,15 @@ namespace RepairWorkshop.BLL.Services
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id)));
 
             if (request == null)
-                throw new NotFoundException("request not found");
+                throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
+
+            if (serviceTask.Status != ServiceTaskStatus.InProgress)
+                throw new ConflictException("Only in progress");
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
@@ -271,7 +281,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
 
             //var serviceTask = await context.ServiceTasks.FindAsync(id);
 
@@ -288,7 +298,7 @@ namespace RepairWorkshop.BLL.Services
             //return serviceTask;
         }
 
-        public async Task<ServiceTask> WaitForServiceTaskParts(int id)
+        public async Task<ResponseServiceTaskDto> WaitForServiceTaskParts(int id)
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
@@ -302,6 +312,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
+
+            if (serviceTask.Status != ServiceTaskStatus.InProgress || serviceTask.Status != ServiceTaskStatus.OnHold)
+                throw new ConflictException("Allowed in progress or on hold");
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
@@ -343,7 +356,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
 
             //var serviceTask = await context.ServiceTasks.FindAsync(id);
 
@@ -360,9 +373,9 @@ namespace RepairWorkshop.BLL.Services
             //return serviceTask;
         }
 
-        public async Task<ServiceTask> EditServiceTask(int id, EditServiceTaskDto dto)
+        public async Task<ResponseServiceTaskDto> EditServiceTask(int id, EditServiceTaskDto dto)
         {
-            var serviceTask = await context.ServiceTasks.FindAsync(id) ?? throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка. Зробити шоб повтора не було
+            var serviceTask = await context.ServiceTasks.Include(s => s.Service).FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка. Зробити шоб повтора не було
 
             var service = await context.Services.FindAsync(dto.ServiceId) ?? throw new NotFoundException("Service not found");
 
@@ -374,7 +387,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return serviceTask;
+            return ReturnDto(serviceTask);
         }
 
         public async Task<ServiceTask?> GetServiceTaskById(int id)
@@ -404,6 +417,21 @@ namespace RepairWorkshop.BLL.Services
             }
 
             return await serviceTasks.ToListAsync();
+        }
+
+        public ResponseServiceTaskDto ReturnDto(ServiceTask serviceTask)
+        {
+            return new ResponseServiceTaskDto(
+                serviceTask.Id = serviceTask.Id,
+                serviceTask.RepairItemId = serviceTask.RepairItemId,
+                serviceTask.UserId = serviceTask.UserId,
+                serviceTask.ServiceId = serviceTask.ServiceId,
+                serviceTask.Cost = serviceTask.Cost,
+                serviceTask.Status = serviceTask.Status,
+                serviceTask.StartedAt = serviceTask.StartedAt,
+                serviceTask.CompletedAt = serviceTask.CompletedAt,
+                serviceTask.DiagnosticsResult = serviceTask.DiagnosticsResult
+            );
         }
     }
 }

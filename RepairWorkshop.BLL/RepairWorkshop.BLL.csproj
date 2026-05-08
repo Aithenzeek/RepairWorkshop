@@ -4,6 +4,10 @@
     <ProjectReference Include="..\RepairWorkShop.DAL\RepairWorkShop.DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Mappers\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

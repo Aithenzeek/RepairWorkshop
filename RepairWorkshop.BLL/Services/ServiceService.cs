@@ -14,7 +14,7 @@ namespace RepairWorkshop.BLL.Services
         {
             var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
 
-            if (existingService.Name == dto.Name)
+            if (existingService != null && existingService.Name == dto.Name)
                 throw new ConflictException("Service with this name exists");
 
             var service = new Service
@@ -51,7 +51,7 @@ namespace RepairWorkshop.BLL.Services
 
             var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
 
-            if (existingService.Name == dto.Name)
+            if (existingService != null && (existingService.Name == dto.Name && service.Name != dto.Name))
                 throw new ConflictException("Service with this name exists");
 
             service.Name = dto.Name;

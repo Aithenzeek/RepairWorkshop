@@ -15,6 +15,9 @@ namespace RepairWorkshop.BLL.Services
             r.UserRoleId == dto.UserRoleId &&
             r.PermissionId == dto.PermissionId);
 
+            if (await context.Permissions.FindAsync(dto.PermissionId) == null)
+                throw new NotFoundException("Permission not found");
+
             if (existingRolePermission != null)
                 throw new ConflictException("This role permission exists");
 

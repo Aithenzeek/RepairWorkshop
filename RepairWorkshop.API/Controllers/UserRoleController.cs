@@ -68,7 +68,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok(rolePermissions);
         }
 
-        [HttpGet("get-role-permission-by-id")]
+        [HttpGet("get-role-permission-by-id/{userRoleId}/{permissionId}")]
         [HasPermission("ROLE_PERMISSION_READ")]
         public async Task<IActionResult> GetrolePermissionById(int userRoleId, int permissionId)
         {
@@ -86,7 +86,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok(rolePermission);
         }
 
-        [HttpDelete("delete-role-permission")]
+        [HttpDelete("delete-role-permission/{userRoleId}/{permissionId}")]
         [HasPermission("ROLE_PERMISSION_DELETE")]
         public async Task<IActionResult> DeleteRolePermission(int userRoleId, int permissionId)
         {
@@ -95,7 +95,7 @@ namespace RepairWorkshop.API.Controllers
             return Ok();
         }
 
-        [HttpPatch("edit-role-permission/")]
+        [HttpPatch("edit-role-permission/{userRoleId}/{permissionId}")]
         [HasPermission("ROLE_PERMISSION_EDIT")]
         public async Task<IActionResult> EditrolePermission(int userRoleId, int permissionId, [FromBody] EditRolePermissionDto dto)
         {

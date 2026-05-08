@@ -8,6 +8,7 @@
         OnHold,
         WaitingForParts,
         Completed,
+        CompletedByTechnician,
         Cancelled,
         WaitingForPickUp,
         PickedUp

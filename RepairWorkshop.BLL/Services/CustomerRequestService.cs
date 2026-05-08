@@ -5,6 +5,7 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
+using System.Diagnostics.CodeAnalysis;
 
 
 namespace RepairWorkshop.BLL.Services
@@ -15,6 +16,14 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<CustomerRequest> CreateRequest(CreateCustomerRequestDto dto)
         {
+            var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == dto.ManagerId);
+
+            if (existingManager == null)
+                throw new NotFoundException("Manager not found");
+
+            if (existingManager.Role.Name != "Manager" && existingManager.Role.Name != "Superadmin")
+                throw new BadRequestException("Selected user is not manager"); // TODO: або тільки для менеджера або для нього і супер адміна
+
             var customerRequest = new CustomerRequest
             {
                 CustomerId = dto.CustomerId,
@@ -51,8 +60,8 @@ namespace RepairWorkshop.BLL.Services
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed)
+                throw new ConflictException("Not allowed in draft or completed");
 
             request.Cancel();
 
@@ -68,8 +77,8 @@ namespace RepairWorkshop.BLL.Services
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft)
-                throw new ConflictException("Not allowed in draft");
+            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Cancelled)
+                throw new ConflictException("Not allowed in draft or cancelled");
 
             request.Complete();
 
@@ -105,7 +114,7 @@ namespace RepairWorkshop.BLL.Services
             if (request.Status == RequestStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
-            request.Status = RequestStatus.WaitingForPickUp;
+            request.AllowPickUp();
 
             await context.SaveChangesAsync();
 
@@ -134,6 +143,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Request not found");
 
             request.CustomerId = dto.CustomerId;
+            request.ManagerId = dto.ManagerId;
 
             await context.SaveChangesAsync();
 
@@ -166,7 +176,7 @@ namespace RepairWorkshop.BLL.Services
             if(!request.RepairItems.Any())
                 throw new ConflictException("No items in request");
 
-            request.Status = RequestStatus.New;
+            request.Start();
 
             await context.SaveChangesAsync();
 

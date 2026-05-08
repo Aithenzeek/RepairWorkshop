@@ -1,6 +1,7 @@
 ﻿namespace RepairWorkshop.BLL.DTOs
 {
     public record EditCustomerRequestDto(
-        int CustomerId
+        int CustomerId,
+        int ManagerId
      );
 }

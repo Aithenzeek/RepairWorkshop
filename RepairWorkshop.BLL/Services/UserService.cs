@@ -14,8 +14,15 @@ namespace RepairWorkshop.BLL.Services
         {
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
 
-            if (dto.Phone == existingUser.Phone)
+            if (existingUser != null && dto.Phone != existingUser.Phone)
                 throw new ConflictException("User with this number exists");
+
+            var existingRole = await context.UserRoles.FindAsync(dto.RoleId);
+
+            if (existingRole == null)
+                throw new NotFoundException("User role not found");
+
+            var formattedPhone = CheckPhone(dto.Phone);
 
             var user = new User
             {
@@ -53,8 +60,10 @@ namespace RepairWorkshop.BLL.Services
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
 
-            if (dto.Phone == existingUser.Phone)
+            if (existingUser != null && (dto.Phone == existingUser.Phone && dto.Phone != existingUser.Phone))
                 throw new ConflictException("User with this number exists");
+
+            var formattedPhone = CheckPhone(dto.Phone);
 
             var existingTasks = await context.ServiceTasks.AnyAsync(t => t.UserId == id &&
             t.Status != ServiceTaskStatus.Draft &&
@@ -95,6 +104,19 @@ namespace RepairWorkshop.BLL.Services
                     .ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Phone == phone);
+        }
+
+        public static string CheckPhone(string phone)
+        {
+            var checkedPhone = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (checkedPhone.Length == 12 && checkedPhone.StartsWith("380"))
+                return checkedPhone;
+
+            if (checkedPhone.Length == 10)
+                return "38" + checkedPhone;
+
+            throw new BadRequestException("Phone not valid");
         }
     }
 }

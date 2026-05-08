@@ -6,6 +6,7 @@ using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
 using System.Numerics;
+using System.Xml;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -65,7 +66,7 @@ namespace RepairWorkshop.BLL.Services
 
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == formattedPhone);
 
-            if (existingCustomer != null)
+            if (existingCustomer != null && customer.Phone != dto.Phone)
                 throw new ConflictException("Customer with this number exists");
 
             customer.Name = dto.Name;
@@ -80,7 +81,7 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.Customers
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Phone == phone);
+                .FirstOrDefaultAsync(c => c.Phone == CheckPhone(phone));
         }
 
         public async Task<List<Customer>> GetAllCustomers()
