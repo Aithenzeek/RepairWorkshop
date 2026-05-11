@@ -2,6 +2,7 @@
 using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
+using System.Security.Claims;
 
 namespace RepairWorkshop.API.Controllers
 {
@@ -33,7 +34,9 @@ namespace RepairWorkshop.API.Controllers
         [HasPermission("REQUEST_CREATE")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateCustomerRequestDto dto)
         {
-            var request = await service.CreateRequest(dto);
+            var managerId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var request = await service.CreateRequest(dto, managerId);
 
             return Ok(request);
         }

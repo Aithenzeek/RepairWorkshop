@@ -37,6 +37,9 @@ namespace RepairWorkshop.BLL.Services
             if (userRole == null)
                 throw new NotFoundException("User role not found");
 
+            if (await context.Users.AnyAsync(u => u.Role.Id == id))
+                throw new ConflictException("Cant delete with existing users");
+
             context.UserRoles.Remove(userRole);
             await context.SaveChangesAsync();
         }

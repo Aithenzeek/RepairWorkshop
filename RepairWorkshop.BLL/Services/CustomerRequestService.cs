@@ -6,6 +6,7 @@ using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 
 
 namespace RepairWorkshop.BLL.Services
@@ -14,9 +15,9 @@ namespace RepairWorkshop.BLL.Services
         AppDbContext context
     ) : ICustomerRequestService
     {
-        public async Task<ResponseCustomerRequestDto> CreateRequest(CreateCustomerRequestDto dto)
+        public async Task<ResponseCustomerRequestDto> CreateRequest(CreateCustomerRequestDto dto, int managerId)
         {
-            var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == dto.ManagerId);
+            var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == managerId);
 
             if (existingManager == null)
                 throw new NotFoundException("Manager not found");
@@ -27,7 +28,7 @@ namespace RepairWorkshop.BLL.Services
             var customerRequest = new CustomerRequest
             {
                 CustomerId = dto.CustomerId,
-                ManagerId = dto.ManagerId,
+                ManagerId = managerId,
                 Status = RequestStatus.Draft
             };
 

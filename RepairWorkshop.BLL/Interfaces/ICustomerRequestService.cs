@@ -5,7 +5,7 @@ namespace RepairWorkshop.BLL.Interfaces
 {
     public interface ICustomerRequestService
     {
-        public Task<ResponseCustomerRequestDto> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto);
+        public Task<ResponseCustomerRequestDto> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto, int managerId);
         public Task DeleteRequest(int id);
         public Task<ResponseCustomerRequestDto> CancelRequest(int id);
         public Task<ResponseCustomerRequestDto> CompleteRequest(int id);
