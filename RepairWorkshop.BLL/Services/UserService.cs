@@ -86,6 +86,7 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.Users
                 .AsNoTracking()
+                .Include(u => u.Role)
                 .ToListAsync();
         }
 
@@ -93,6 +94,7 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.Users
                 .AsNoTracking()
+                .Include(u =>u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 

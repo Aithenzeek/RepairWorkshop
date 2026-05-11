@@ -14,7 +14,7 @@ namespace RepairWorkshop.BLL.Services
         AppDbContext context
     ) : ICustomerRequestService
     {
-        public async Task<CustomerRequest> CreateRequest(CreateCustomerRequestDto dto)
+        public async Task<ResponseCustomerRequestDto> CreateRequest(CreateCustomerRequestDto dto)
         {
             var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == dto.ManagerId);
 
@@ -35,7 +35,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return customerRequest;
+            return await ReturnDto(customerRequest);
         }
 
         public async Task DeleteRequest(int id)
@@ -53,9 +53,9 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<CustomerRequest> CancelRequest(int id)
+        public async Task<ResponseCustomerRequestDto> CancelRequest(int id)
         {
-            var request = await context.Requests.FindAsync(id);
+            var request = await context.Requests.Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id);
 
             if (request == null)
                 throw new NotFoundException("Request not found");
@@ -67,24 +67,24 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return request;
+            return await ReturnDto(request);
         }
 
-        public async Task<CustomerRequest> CompleteRequest(int id)
+        public async Task<ResponseCustomerRequestDto> CompleteRequest(int id)
         {
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Cancelled)
-                throw new ConflictException("Not allowed in draft or cancelled");
+            if (request.Status != RequestStatus.CompletedByTechnician)
+                throw new ConflictException("Allowed when completed by technician");
 
             request.Complete();
 
             await context.SaveChangesAsync();
 
-            return request;
+            return await ReturnDto(request);
         }
 
         //public async Task<CustomerRequest> ApproveRequest(int id)
@@ -104,7 +104,7 @@ namespace RepairWorkshop.BLL.Services
         //    return request;
         //}
 
-        public async Task<CustomerRequest> AllowPickUp(int id)
+        public async Task<ResponseCustomerRequestDto> AllowPickUp(int id)
         {
             var request = await context.Requests.FindAsync(id);
 
@@ -118,13 +118,15 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return request;
+            return await ReturnDto(request);
         }
 
         public async Task<CustomerRequest?> GetRequestById(int id)
         {
             return await context.Requests
                 .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -132,10 +134,12 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.Requests
                 .AsNoTracking()
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
                 .ToListAsync();
         }
 
-        public async Task<CustomerRequest> EditRequest(int id, EditCustomerRequestDto dto)
+        public async Task<ResponseCustomerRequestDto> EditRequest(int id, EditCustomerRequestDto dto)
         {
             var request = await context.Requests.FindAsync(id);
 
@@ -147,7 +151,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return request;
+            return await ReturnDto(request);
         }
 
         //public async Task<CustomerRequest> AssingCustomer(int id, int customerId)
@@ -164,9 +168,9 @@ namespace RepairWorkshop.BLL.Services
         //    return request;
         //}
         // переробити
-        public async Task<CustomerRequest> StartRequest(int id)
+        public async Task<ResponseCustomerRequestDto> StartRequest(int id) // TODO: може забрати якшо якшо робити, шо воно буде через ітем йти
         {
-            var request = await context.Requests.FindAsync(id)
+            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException("Request not found");
 
             // invalidState по статусу валідацію, загальна помилка 
@@ -180,7 +184,20 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return request;
+            return await ReturnDto(request);
+        }
+
+        public async Task<ResponseCustomerRequestDto> ReturnDto(CustomerRequest request)
+        {
+            return new ResponseCustomerRequestDto(
+                request.Id,
+                request.CustomerId,
+                request.ManagerId,
+                request.StartedAt,
+                request.Status,
+                request.CompletedAt,
+                request.TotalCost
+            );
         }
     }
 }

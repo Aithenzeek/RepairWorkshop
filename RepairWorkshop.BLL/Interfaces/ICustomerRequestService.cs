@@ -5,15 +5,15 @@ namespace RepairWorkshop.BLL.Interfaces
 {
     public interface ICustomerRequestService
     {
-        public Task<CustomerRequest> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto);
+        public Task<ResponseCustomerRequestDto> CreateRequest(/*int managerId, */CreateCustomerRequestDto dto);
         public Task DeleteRequest(int id);
-        public Task<CustomerRequest> CancelRequest(int id);
-        public Task<CustomerRequest> CompleteRequest(int id);
+        public Task<ResponseCustomerRequestDto> CancelRequest(int id);
+        public Task<ResponseCustomerRequestDto> CompleteRequest(int id);
         //public Task<CustomerRequest> ApproveRequest(int id);
-        public Task<CustomerRequest> AllowPickUp(int id);
+        public Task<ResponseCustomerRequestDto> AllowPickUp(int id);
         public Task<CustomerRequest?> GetRequestById(int id);
         public Task<List<CustomerRequest>> GetAllRequests();
-        public Task<CustomerRequest> EditRequest(int id, EditCustomerRequestDto dto);
-        public Task<CustomerRequest> StartRequest(int id);
+        public Task<ResponseCustomerRequestDto> EditRequest(int id, EditCustomerRequestDto dto);
+        public Task<ResponseCustomerRequestDto> StartRequest(int id);
     }
 }

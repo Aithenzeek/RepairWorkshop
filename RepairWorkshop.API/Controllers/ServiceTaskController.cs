@@ -59,7 +59,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("start/{id}")]
-        [HasPermission("SERVICE_TASK_EDIT")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> StartServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.StartServiceTask(id);
@@ -68,7 +68,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("complete")]
-        [HasPermission("SERVICE_TASK_EDIT")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> CompleteServiceTask([FromBody] CompleteServiceTaskDto dto)
         {
             var serviceTask = await service.CompleteServiceTask(dto);
@@ -77,7 +77,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("cancel/{id}")]
-        [HasPermission("SERVICE_TASK_EDIT")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> CancelServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.CancelServiceTask(id);
@@ -86,7 +86,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("wait-for-parts/{id}")]
-        [HasPermission("SERVICE_TASK_EDIT")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> WaitForServiceTaskParts([FromRoute] int id)
         {
             var serviceTask = await service.WaitForServiceTaskParts(id);
@@ -95,7 +95,7 @@ namespace RepairWorkshop.API.Controllers
         }
 
         [HttpPatch("set-on-hold/{id}")]
-        [HasPermission("SERVICE_TASK_EDIT")]
+        [Authorize(Roles = "Technician")]
         public async Task<IActionResult> SetOnHoldServiceTask([FromRoute] int id)
         {
             var serviceTask = await service.SetOnHoldServiceTask(id);

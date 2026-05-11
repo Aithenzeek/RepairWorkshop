@@ -29,6 +29,11 @@ namespace RepairWorkShop.DAL.Entities
 
         public void Complete()
         {
+            Status = RepairItemStatus.Completed;
+        }
+
+        public void CompleteByTechnician()
+        {
             Status = RepairItemStatus.CompletedByTechnician;
             CompletedAt = DateTime.Now;
         }
@@ -50,10 +55,10 @@ namespace RepairWorkShop.DAL.Entities
 
         public void Start()
         {
-            Status = RepairItemStatus.New;
+            //Status = RepairItemStatus.New;
 
             foreach (var task in ServiceTasks)
-                task.Status = ServiceTaskStatus.OnHold;
+                task.Status = ServiceTaskStatus.New;
         }
 
         public void GetServiceCost()

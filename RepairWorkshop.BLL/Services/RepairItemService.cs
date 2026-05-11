@@ -73,6 +73,15 @@ namespace RepairWorkshop.BLL.Services
             //if (repairItem.Status == RepairItemStatus.Approved)
             //    throw new ConflictException("Only approved repair item can be started");
 
+            if (repairItem.ServiceTasks.Count == 0)
+                throw new NotFoundException("Can`t be started without any service task");
+
+            //if (repairItem.Status == RepairItemStatus.New)
+            //    throw new ConflictException("Repair item already started");
+
+            if (repairItem.Status != RepairItemStatus.New)
+                throw new ConflictException("Only new can be started");
+
             repairItem.Start();
 
             if (request.RepairItems.Any(r => r.Status == RepairItemStatus.New))
@@ -83,7 +92,7 @@ namespace RepairWorkshop.BLL.Services
             return ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto> CompleteRepairItem(int id)
+        public async Task<ResponseRepairItemDto> CompleteRepairItem(int id) // видалити напевно або тільки зробити чисто для того шоб з виконаного техніком перевелося в виконане
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -92,6 +101,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
+
+            if (repairItem.Status != RepairItemStatus.CompletedByTechnician)
+                throw new BadRequestException("Allowed when completed by technician");
 
             repairItem.Complete();
 
@@ -102,7 +114,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> CancelRepairItem(int id)
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
+            var repairItem = await context.RepairItems.Include(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id);
 
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
@@ -126,6 +138,9 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
+            if (repairItem.Status != RepairItemStatus.Completed && repairItem.Status != RepairItemStatus.Cancelled)
+                throw new ConflictException("Allowed only for completed or cancelled");
+
             repairItem.AllowPickUp();
 
             if (request.RepairItems.Any(r => r.Status == RepairItemStatus.WaitingForPickUp))
@@ -136,7 +151,7 @@ namespace RepairWorkshop.BLL.Services
             return ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto> WaitForRepairItemParts(int id)
+        public async Task<ResponseRepairItemDto> WaitForRepairItemParts(int id) //TODO: тут цього напевно не треба, бо воно буде братися з тасків
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 
@@ -153,7 +168,7 @@ namespace RepairWorkshop.BLL.Services
             return ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id)
+        public async Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id) // TODO: може забрати, бо автоматично з таска йде
         {
             var repairItem = await context.RepairItems.FindAsync(id);
 

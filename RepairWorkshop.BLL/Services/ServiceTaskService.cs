@@ -32,8 +32,8 @@ namespace RepairWorkshop.BLL.Services
 
             var user = await context.Users.Include(r => r.Role).FirstOrDefaultAsync(u => u.Id == dto.UserId);
 
-            if (user != null && user.Role.Name != "Manager" && user.Role.Name != "Superadmin")
-                throw new BadRequestException("Selected user role is not manager");
+            if (user != null && user.Role.Name != "Technician")
+                throw new BadRequestException("Selected user role is not technician");
 
             var serviceTask = new ServiceTask
             {
@@ -82,8 +82,8 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.New && serviceTask.Status != ServiceTaskStatus.OnHold)
-                throw new ConflictException("Service task must be started or on hold");
+            if (serviceTask.Status != ServiceTaskStatus.New && serviceTask.Status != ServiceTaskStatus.OnHold && serviceTask.Status != ServiceTaskStatus.InProgress)
+                throw new ConflictException("Service task must be new or on hold");
 
             serviceTask.Status = ServiceTaskStatus.InProgress;
 
@@ -152,7 +152,7 @@ namespace RepairWorkshop.BLL.Services
                 )
                 if (repairItem.ServiceTasks.All(s => s.Status == ServiceTaskStatus.Completed || s.Status == ServiceTaskStatus.Cancelled))
                 {
-                    repairItem.Complete();
+                    repairItem.CompleteByTechnician();
                     repairItem.GetServiceCost();
 
                     if (repairItem.Status != RepairItemStatus.Draft &&
@@ -394,6 +394,8 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.ServiceTasks
                 .AsNoTracking()
+                .Include(s => s.Service)
+                .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
@@ -401,6 +403,8 @@ namespace RepairWorkshop.BLL.Services
         {
             return await context.ServiceTasks
                 .AsNoTracking()
+                .Include(s => s.Service)
+                .Include(s => s.User)
                 .ToListAsync();
         }
 
@@ -410,10 +414,13 @@ namespace RepairWorkshop.BLL.Services
 
             if (activeOnly)
             {
-                serviceTasks = serviceTasks.Where(t =>
-                    t.Status != ServiceTaskStatus.Draft &&
-                    t.Status != ServiceTaskStatus.Completed &&
-                    t.Status != ServiceTaskStatus.Cancelled);
+                serviceTasks = serviceTasks
+                    .Include(s => s.Service)
+                    .Include(s => s.User)
+                    .Where(t =>
+                        t.Status != ServiceTaskStatus.Draft &&
+                        t.Status != ServiceTaskStatus.Completed &&
+                        t.Status != ServiceTaskStatus.Cancelled);
             }
 
             return await serviceTasks.ToListAsync();
