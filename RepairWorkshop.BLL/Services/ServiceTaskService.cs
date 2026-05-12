@@ -82,8 +82,8 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.New && serviceTask.Status != ServiceTaskStatus.OnHold && serviceTask.Status != ServiceTaskStatus.InProgress)
-                throw new ConflictException("Service task must be new or on hold");
+            if (serviceTask.Status != ServiceTaskStatus.New && serviceTask.Status != ServiceTaskStatus.OnHold && serviceTask.Status != ServiceTaskStatus.InProgress && serviceTask.Status != ServiceTaskStatus.WaitingForParts)
+                throw new ConflictException("Service task must be new, on hold or wait for parts");
 
             serviceTask.Status = ServiceTaskStatus.InProgress;
 
@@ -95,17 +95,15 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem == null)
                 throw new NotFoundException("Repair item not found");
 
-            if (repairItem.StartedAt == null) // TODO: переробити
-            {
                 repairItem.Status = RepairItemStatus.InProgress;
+
+            if (repairItem.StartedAt == null) // TODO: переробити
                 repairItem.StartedAt = serviceTask.StartedAt;
-            }
+
+                request.Status = RequestStatus.InProgress;
 
             if (request.StartedAt == null)
-            {
-                request.Status = RequestStatus.InProgress;
                 request.StartedAt = repairItem.StartedAt;
-            }
 
             await context.SaveChangesAsync();
 
@@ -117,12 +115,12 @@ namespace RepairWorkshop.BLL.Services
             var request = await context.Requests
                 .Include(r => r.RepairItems)
                 .ThenInclude(i => i.ServiceTasks)
-                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == dto.id)));
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == dto.Id)));
 
             if (request == null)
                 throw new NotFoundException("Request not found");
 
-            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == dto.id);
+            var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == dto.Id);
 
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
@@ -313,7 +311,7 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask == null)
                 throw new NotFoundException("Service task not found");
 
-            if (serviceTask.Status != ServiceTaskStatus.InProgress || serviceTask.Status != ServiceTaskStatus.OnHold)
+            if (serviceTask.Status != ServiceTaskStatus.InProgress && serviceTask.Status != ServiceTaskStatus.OnHold)
                 throw new ConflictException("Allowed in progress or on hold");
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&

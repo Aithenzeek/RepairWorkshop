@@ -5,7 +5,7 @@ using System.Text;
 namespace RepairWorkshop.BLL.DTOs
 {
     public record CompleteServiceTaskDto(
-        int id,
+        int Id,
         string? DiagnosticsResult
     );
 }

@@ -19,6 +19,15 @@ namespace RepairWorkshop.API.Controllers
             return Ok(users);
         }
 
+        [HttpGet("get-all-technicians")]
+        [HasPermission("USER_READ")]
+        public async Task<IActionResult> GetAllTechnicins()
+        {
+            var users = await service.GetAllTechnicians();
+
+            return Ok(users);
+        }
+
         [HttpGet("get-by-id/{id}")]
         [HasPermission("USER_READ")]
         public async Task<IActionResult> GetUserById(int id)

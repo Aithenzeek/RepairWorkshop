@@ -9,6 +9,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task DeleteUser(int id);
         public Task<User> EditUser(int id, EditUserDto dto);
         public Task<List<User>> GetAllUsers();
+        public Task<List<User>> GetAllTechnicians();
         public Task<User?> GetUserById(int id);
         public Task<User?> GetUserByPhone(string phone);
     }

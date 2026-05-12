@@ -13,9 +13,13 @@ namespace RepairWorkshop.BLL.Services
         public async Task<User> CreateUser(CreateUserDto dto)
         {
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+            var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
             if (existingUser != null && dto.Phone != existingUser.Phone)
                 throw new ConflictException("User with this number exists");
+
+            if (existingCustomer != null &&  dto.Phone != existingCustomer.Phone)
+                throw new ConflictException("Customer with this number exists");
 
             var existingRole = await context.UserRoles.FindAsync(dto.RoleId);
 
@@ -59,9 +63,13 @@ namespace RepairWorkshop.BLL.Services
             var user = await context.Users.FindAsync(id) ?? throw new NotFoundException("User not found");
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+            var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
             if (existingUser != null && (dto.Phone == existingUser.Phone && dto.Phone != existingUser.Phone))
                 throw new ConflictException("User with this number exists");
+
+            if (existingCustomer != null && dto.Phone != existingCustomer.Phone)
+                throw new ConflictException("Customer with this number exists");
 
             var formattedPhone = CheckPhone(dto.Phone);
 
@@ -87,6 +95,15 @@ namespace RepairWorkshop.BLL.Services
             return await context.Users
                 .AsNoTracking()
                 .Include(u => u.Role)
+                .ToListAsync();
+        }
+
+        public async Task<List<User>> GetAllTechnicians()
+        {
+            return await context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .Where(u => u.Role.Name == "Technician")
                 .ToListAsync();
         }
 

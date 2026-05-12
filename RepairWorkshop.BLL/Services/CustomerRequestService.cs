@@ -17,7 +17,11 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<ResponseCustomerRequestDto> CreateRequest(CreateCustomerRequestDto dto, int managerId)
         {
+            var existingCustomer = await context.Customers.FindAsync(dto.CustomerId);
             var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == managerId);
+
+            if (existingCustomer == null)
+                throw new NotFoundException("Customer not found");
 
             if (existingManager == null)
                 throw new NotFoundException("Manager not found");
@@ -142,13 +146,17 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> EditRequest(int id, EditCustomerRequestDto dto)
         {
+            var existingCustomer = await context.Customers.FindAsync(dto.CustomerId);
+
+            if (existingCustomer == null)
+                throw new NotFoundException("Customer not found");
+
             var request = await context.Requests.FindAsync(id);
 
             if (request == null)
                 throw new NotFoundException("Request not found");
 
             request.CustomerId = dto.CustomerId;
-            request.ManagerId = dto.ManagerId;
 
             await context.SaveChangesAsync();
 
@@ -169,7 +177,7 @@ namespace RepairWorkshop.BLL.Services
         //    return request;
         //}
         // переробити
-        public async Task<ResponseCustomerRequestDto> StartRequest(int id) // TODO: може забрати якшо якшо робити, шо воно буде через ітем йти
+        public async Task<ResponseCustomerRequestDto> StartRequest(int id) // TODO: може забрати якшо робити, шо воно буде через ітем йти
         {
             var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException("Request not found");
