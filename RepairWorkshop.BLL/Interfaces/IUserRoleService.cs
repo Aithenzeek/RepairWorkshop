@@ -5,10 +5,10 @@ namespace RepairWorkshop.BLL.Interfaces
 {
     public interface IUserRoleService
     {
-        public Task<UserRole> CreateUserRole(CreateUserRoleDto dto);
+        public Task<ResponseUserRoleDto> CreateUserRole(CreateUserRoleDto dto);
         public Task DeleteUserRole(int id);
-        public Task<UserRole> EditUserRole(int id, EditUserRoleDto dto);
+        public Task<ResponseUserRoleDto> EditUserRole(int id, EditUserRoleDto dto);
         public Task<List<UserRole>> GetAllUserRoles();
-        public Task<UserRole?> GetUserRoleById(int id);
+        public Task<ResponseUserRoleDto?> GetUserRoleById(int id);
     }
 }

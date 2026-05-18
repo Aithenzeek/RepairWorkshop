@@ -30,7 +30,7 @@ namespace RepairWorkshop.BLL.Services
             await context.RepairItems.AddAsync(repairItem);
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task DeleteRepairItem(int id)
@@ -98,7 +98,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> CompleteRepairItem(int id) // видалити напевно або тільки зробити чисто для того шоб з виконаного техніком перевелося в виконане
@@ -115,7 +115,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> CancelRepairItem(int id)
@@ -129,7 +129,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> AllowPickUpRepairItem(int id)
@@ -151,7 +151,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> WaitForRepairItemParts(int id) //TODO: тут цього напевно не треба, бо воно буде братися з тасків
@@ -165,7 +165,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id) // TODO: може забрати, бо автоматично з таска йде
@@ -179,7 +179,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
         public async Task<ResponseRepairItemDto> EditRepairItem(int id, EditRepairItemDto dto)
@@ -199,14 +199,16 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return ReturnDto(repairItem);
+            return await ReturnDto(repairItem);
         }
 
-        public async Task<RepairItem?> GetRepairItemById(int id)
+        public async Task<ResponseRepairItemDto?> GetRepairItemById(int id)
         {
-            return await context.RepairItems
+            var repairItem = await context.RepairItems
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+
+            return await ReturnDto(repairItem);
         }
 
         public async Task<List<RepairItem>> GetAllRepairItems()
@@ -234,7 +236,7 @@ namespace RepairWorkshop.BLL.Services
             return await repairItems.Distinct().ToListAsync();
         }
 
-        public ResponseRepairItemDto ReturnDto(RepairItem repairItem)
+        public async Task<ResponseRepairItemDto> ReturnDto(RepairItem repairItem)
         {
             return new ResponseRepairItemDto(
                 repairItem.Id,

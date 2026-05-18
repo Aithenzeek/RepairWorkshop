@@ -10,7 +10,7 @@ namespace RepairWorkshop.BLL.Services
 {
     public class ServiceService(AppDbContext context) : IServiceService
     {
-        public async Task<Service> CreateService(CreateServiceDto dto)
+        public async Task<ResponseServiceDto> CreateService(CreateServiceDto dto)
         {
             var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
 
@@ -26,7 +26,7 @@ namespace RepairWorkshop.BLL.Services
             await context.Services.AddAsync(service);
             await context.SaveChangesAsync();
 
-            return service;
+            return await ReturnDto(service);
         }
 
         public async Task DeleteService(int id)
@@ -39,7 +39,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<Service> EditService(int id, EditServiceDto dto)
+        public async Task<ResponseServiceDto> EditService(int id, EditServiceDto dto)
         {
             var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
             
@@ -53,7 +53,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return service;
+            return await ReturnDto(service);
         }
 
         public async Task<List<Service>> GetAllServices()
@@ -63,14 +63,16 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<Service?> GetServiceById(int id)
+        public async Task<ResponseServiceDto?> GetServiceById(int id)
         {
-            return await context.Services
+            var service = await context.Services
                 .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service not found");
+
+            return await ReturnDto(service);
         }
 
-        public async Task<Service> ActivateService(int id)
+        public async Task<ResponseServiceDto> ActivateService(int id)
         {
             var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
             
@@ -78,10 +80,10 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return service;
+            return await ReturnDto(service);
         }
 
-        public async Task<Service> InactivateService(int id)
+        public async Task<ResponseServiceDto> InactivateService(int id)
         {
             var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
             
@@ -89,7 +91,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return service;
+            return await ReturnDto(service);
         }
 
         public async Task<List<Service>> GetAllActiveServices()
@@ -97,6 +99,16 @@ namespace RepairWorkshop.BLL.Services
             return await context.Services
                 .Where(s => s.Status == ServiceStatus.Active)
                 .ToListAsync();
+        }
+
+        public async Task<ResponseServiceDto> ReturnDto(Service service)
+        {
+            return new ResponseServiceDto(
+                service.Id,
+                service.Name,
+                service.Price,
+                service.Status
+                );
         }
     }
 }

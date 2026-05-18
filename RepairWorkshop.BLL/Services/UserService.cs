@@ -10,7 +10,7 @@ namespace RepairWorkshop.BLL.Services
 {
     public class UserService(AppDbContext context) : IUserService
     {
-        public async Task<User> CreateUser(CreateUserDto dto)
+        public async Task<ResponseUserDto> CreateUser(CreateUserDto dto)
         {
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
@@ -35,7 +35,7 @@ namespace RepairWorkshop.BLL.Services
             await context.Users.AddAsync(user);
             await context.SaveChangesAsync();
 
-            return user;
+            return await ReturnDto(user);
         }
 
         public async Task DeleteUser(int id)
@@ -55,7 +55,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<User> EditUser(int id, EditUserDto dto)
+        public async Task<ResponseUserDto> EditUser(int id, EditUserDto dto)
         {
             var user = await context.Users.FindAsync(id) ?? throw new NotFoundException("User not found");
 
@@ -84,7 +84,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return user;
+            return await ReturnDto(user);
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -104,12 +104,14 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<User?> GetUserById(int id)
+        public async Task<ResponseUserDto?> GetUserById(int id)
         {
-            return await context.Users
+            var user = await context.Users
                 .AsNoTracking()
-                .Include(u =>u.Role)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
+
+            return await ReturnDto(user);
         }
 
         // треба тільки для назначення ролей
@@ -133,6 +135,16 @@ namespace RepairWorkshop.BLL.Services
                 return "38" + checkedPhone;
 
             throw new BadRequestException("Phone not valid");
+        }
+
+        public async Task<ResponseUserDto> ReturnDto(User user)
+        {
+            return new ResponseUserDto(
+                user.Id,
+                user.Name,
+                user.Phone,
+                user.RoleId
+                );
         }
     }
 }

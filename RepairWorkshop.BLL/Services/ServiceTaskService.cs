@@ -375,13 +375,15 @@ namespace RepairWorkshop.BLL.Services
             return ReturnDto(serviceTask);
         }
 
-        public async Task<ServiceTask?> GetServiceTaskById(int id)
+        public async Task<ResponseServiceTaskDto?> GetServiceTaskById(int id)
         {
-            return await context.ServiceTasks
+            var serviceTask = await context.ServiceTasks
                 .AsNoTracking()
                 .Include(s => s.Service)
                 .Include(s => s.User)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
+
+            return ReturnDto(serviceTask);
         }
 
         public async Task<List<ServiceTask>> GetAllServiceTasks()

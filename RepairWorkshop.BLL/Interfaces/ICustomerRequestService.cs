@@ -11,7 +11,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponseCustomerRequestDto> CompleteRequest(int id);
         //public Task<CustomerRequest> ApproveRequest(int id);
         public Task<ResponseCustomerRequestDto> AllowPickUp(int id);
-        public Task<CustomerRequest?> GetRequestById(int id);
+        public Task<ResponseCustomerRequestDto?> GetRequestById(int id);
         public Task<List<CustomerRequest>> GetAllRequests();
         public Task<ResponseCustomerRequestDto> EditRequest(int id, EditCustomerRequestDto dto);
         public Task<ResponseCustomerRequestDto> StartRequest(int id);

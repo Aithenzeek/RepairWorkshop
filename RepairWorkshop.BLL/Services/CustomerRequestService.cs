@@ -108,13 +108,15 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(request);
         }
 
-        public async Task<CustomerRequest?> GetRequestById(int id)
+        public async Task<ResponseCustomerRequestDto?> GetRequestById(int id)
         {
-            return await context.Requests
+            var request = await context.Requests
                 .AsNoTracking()
                 .Include(r => r.Customer)
                 .Include(r => r.Manager)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException("Request not found");
+
+            return await ReturnDto(request);
         }
 
         public async Task<List<CustomerRequest>> GetAllRequests()

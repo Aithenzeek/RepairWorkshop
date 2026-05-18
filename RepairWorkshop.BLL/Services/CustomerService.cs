@@ -10,7 +10,7 @@ namespace RepairWorkshop.BLL.Services
 {
     public class CustomerService(AppDbContext context) : ICustomerService
     {
-        public async Task<Customer> CreateCustomer(CreateCustomerDto dto)
+        public async Task<ResponseCustomerDto> CreateCustomer(CreateCustomerDto dto)
         {
             var phone = CheckPhone(dto.Phone);
 
@@ -21,7 +21,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("User with this phone exists");
 
             if (existingCustomer != null)
-                return existingCustomer;
+                return await ReturnDto(existingCustomer);
 
             var customer = new Customer
             {
@@ -33,7 +33,7 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return customer;
+            return await ReturnDto(customer);
         }
 
         public async Task DeleteCustomer(int id)
@@ -55,7 +55,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<Customer> EditCustomer(int id, EditCustomerDto dto)
+        public async Task<ResponseCustomerDto> EditCustomer(int id, EditCustomerDto dto)
         {
             var formattedPhone = CheckPhone(dto.Phone);
 
@@ -78,14 +78,16 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return customer;
+            return await ReturnDto(customer);
         }
 
-        public async Task<Customer?> GetCustomerByPhone(string phone)
+        public async Task<ResponseCustomerDto?> GetCustomerByPhone(string phone)
         {
-            return await context.Customers
+            var customer = await context.Customers
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Phone == CheckPhone(phone));
+                .FirstOrDefaultAsync(c => c.Phone == CheckPhone(phone)) ?? throw new NotFoundException("Customer not found");
+
+            return await ReturnDto(customer);
         }
 
         public async Task<List<Customer>> GetAllCustomers()
@@ -106,6 +108,15 @@ namespace RepairWorkshop.BLL.Services
                 return "38" + checkedPhone;
 
             throw new BadRequestException("Phone not valid");
+        }
+
+        public async Task<ResponseCustomerDto> ReturnDto(Customer customer)
+        {
+            return new ResponseCustomerDto(
+                customer.Id,
+                customer.Name,
+                customer.Phone
+                );
         }
     }
 }

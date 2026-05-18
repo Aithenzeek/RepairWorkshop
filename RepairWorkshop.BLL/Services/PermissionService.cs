@@ -9,7 +9,7 @@ namespace RepairWorkshop.BLL.Services
 {
     public class PermissionService(AppDbContext context) : IPermissionService
     {
-        public async Task<Permission> CreatePermission(CreatePermissionDto dto)
+        public async Task<ResponsePermissionDto> CreatePermission(CreatePermissionDto dto)
         {
             var existingPermission = await context.Permissions.FirstOrDefaultAsync(p => p.Name == dto.Name);
 
@@ -25,7 +25,7 @@ namespace RepairWorkshop.BLL.Services
             await context.AddAsync(permission);
             await context.SaveChangesAsync();
 
-            return permission;
+            return await ReturnDto(permission);
         }
 
         public async Task DeletePermission(int id)
@@ -36,7 +36,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<Permission> EditPermission(int id, EditPermissionDto dto)
+        public async Task<ResponsePermissionDto> EditPermission(int id, EditPermissionDto dto)
         {
             var permission = await context.Permissions.FindAsync(id) ?? throw new NotFoundException("premission not found");
             
@@ -50,17 +50,28 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return permission;
+            return await ReturnDto(permission);
         }
 
-        public async Task<Permission?> GetPermissionById(int id)
+        public async Task<ResponsePermissionDto?> GetPermissionById(int id)
         {
-            return await context.Permissions.FindAsync(id);
+            var permission = await context.Permissions.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException("Permission not found");
+
+            return await ReturnDto(permission);
         }
 
         public async Task<List<Permission>> GetAllPermissions()
         {
             return await context.Permissions.ToListAsync();
+        }
+
+        public async Task<ResponsePermissionDto> ReturnDto(Permission permission)
+        {
+            return new ResponsePermissionDto(
+                permission.Id,
+                permission.Name,
+                permission.Code
+                );
         }
     }
 }

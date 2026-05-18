@@ -9,7 +9,7 @@ namespace RepairWorkshop.BLL.Services
 {
     public class RolePermissionService(AppDbContext context) : IRolePermissionService
     {
-        public async Task<RolePermission> CreateRolePermission(CreateRolePermissionDto dto)
+        public async Task<ResponseRolePermission> CreateRolePermission(CreateRolePermissionDto dto)
         {
             var existingRolePermission = await context.RolePermissions.FirstOrDefaultAsync(r =>
             r.UserRoleId == dto.UserRoleId &&
@@ -30,7 +30,7 @@ namespace RepairWorkshop.BLL.Services
             await context.RolePermissions.AddAsync(rolePermission);
             await context.SaveChangesAsync();
 
-            return rolePermission;
+            return await ReturnDto(rolePermission);
         }
 
         public async Task DeleteRolePermission(int userRoleId, int permissionId)
@@ -43,7 +43,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<RolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto) // TODO: може забрати взагалі, бо легше буде нове створити чим редагувати старе
+        public async Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto) // TODO: може забрати взагалі, бо легше буде нове створити чим редагувати старе
         {
             var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
@@ -61,19 +61,29 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
-            return rolePermission;
+            return await ReturnDto(rolePermission);
         }
 
-        public async Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
+        public async Task<ResponseRolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
         {
-            return await context.RolePermissions
+            var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
-                r.PermissionId == permissionId);
+                r.PermissionId == permissionId) ?? throw new NotFoundException("Role permission not found");
+
+            return await ReturnDto(rolePermission);
         }
 
         public async Task<List<RolePermission>> GetAllRolePermissions()
         {
             return await context.RolePermissions.ToListAsync();
+        }
+
+        public async Task<ResponseRolePermission> ReturnDto(RolePermission rolePermission)
+        {
+            return new ResponseRolePermission(
+                rolePermission.UserRoleId,
+                rolePermission.PermissionId
+                );
         }
     }
 }

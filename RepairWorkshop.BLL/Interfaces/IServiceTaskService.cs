@@ -13,7 +13,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponseServiceTaskDto> SetOnHoldServiceTask(int id, int technicianId);
         public Task<ResponseServiceTaskDto> WaitForServiceTaskParts(int id, int technicianId);
         public Task<ResponseServiceTaskDto> EditServiceTask(int id, EditServiceTaskDto dto);
-        public Task<ServiceTask?> GetServiceTaskById(int id);
+        public Task<ResponseServiceTaskDto?> GetServiceTaskById(int id);
         public Task<List<ServiceTask>> GetAllServiceTasks();
         public Task<List<ServiceTask>> GetAllActiveServiceTasks(int userId, bool activeOnly);
     }

@@ -5,13 +5,13 @@ namespace RepairWorkshop.BLL.Interfaces
 {
     public interface IServiceService
     {
-        public Task<Service> CreateService(CreateServiceDto dto);
+        public Task<ResponseServiceDto> CreateService(CreateServiceDto dto);
         public Task DeleteService(int id);
-        public Task<Service> EditService(int id, EditServiceDto dto);
+        public Task<ResponseServiceDto> EditService(int id, EditServiceDto dto);
         public Task<List<Service>> GetAllServices();
-        public Task<Service?> GetServiceById(int id);
-        public Task<Service> ActivateService(int id);
-        public Task<Service> InactivateService(int id);
+        public Task<ResponseServiceDto?> GetServiceById(int id);
+        public Task<ResponseServiceDto> ActivateService(int id);
+        public Task<ResponseServiceDto> InactivateService(int id);
 
     }
 }
