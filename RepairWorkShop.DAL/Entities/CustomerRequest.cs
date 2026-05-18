@@ -47,6 +47,9 @@ namespace RepairWorkShop.DAL.Entities
         public void AllowPickUp()
         {
             Status = RequestStatus.WaitingForPickUp;
+
+            foreach (var item in RepairItems)
+                item.Status = RepairItemStatus.WaitingForPickUp;
         }
 
         public void Start()

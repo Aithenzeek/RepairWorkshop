@@ -31,11 +31,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeleteService(int id)
         {
-            var service = await context.Services.FindAsync(id);
-
-            if (service == null)
-                throw new NotFoundException("Service not found");
-
+            var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
+            
             service.Status = ServiceStatus.Inactive;
 
             //context.Services.Remove(service);
@@ -44,11 +41,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Service> EditService(int id, EditServiceDto dto)
         {
-            var service = await context.Services.FindAsync(id);
-
-            if (service == null)
-                throw new NotFoundException("Service not found");
-
+            var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
+            
             var existingService = await context.Services.FirstOrDefaultAsync(s => s.Name == dto.Name);
 
             if (existingService != null && (existingService.Name == dto.Name && service.Name != dto.Name))
@@ -78,11 +72,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Service> ActivateService(int id)
         {
-            var service = await context.Services.FindAsync(id);
-
-            if (service == null)
-                throw new NotFoundException("Service not found");
-
+            var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
+            
             service.Status = ServiceStatus.Active;
 
             await context.SaveChangesAsync();
@@ -92,11 +83,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Service> InactivateService(int id)
         {
-            var service = await context.Services.FindAsync(id);
-
-            if (service == null)
-                throw new NotFoundException("Service not found");
-
+            var service = await context.Services.FindAsync(id) ?? throw new NotFoundException("Service not found");
+            
             service.Status = ServiceStatus.Inactive;
 
             await context.SaveChangesAsync();

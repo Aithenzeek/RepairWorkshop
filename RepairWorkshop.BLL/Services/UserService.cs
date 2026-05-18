@@ -21,11 +21,8 @@ namespace RepairWorkshop.BLL.Services
             if (existingCustomer != null &&  dto.Phone != existingCustomer.Phone)
                 throw new ConflictException("Customer with this number exists");
 
-            var existingRole = await context.UserRoles.FindAsync(dto.RoleId);
-
-            if (existingRole == null)
-                throw new NotFoundException("User role not found");
-
+            var existingRole = await context.UserRoles.FindAsync(dto.RoleId) ?? throw new NotFoundException("User role not found");
+            
             var formattedPhone = CheckPhone(dto.Phone);
 
             var user = new User

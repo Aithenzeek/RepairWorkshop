@@ -32,11 +32,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeleteUserRole(int id)
         {
-            var userRole = await context.UserRoles.FindAsync(id);
-
-            if (userRole == null)
-                throw new NotFoundException("User role not found");
-
+            var userRole = await context.UserRoles.FindAsync(id) ?? throw new NotFoundException("User role not found");
+            
             if (await context.Users.AnyAsync(u => u.Role.Id == id))
                 throw new ConflictException("Cant delete with existing users");
 
@@ -46,11 +43,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<UserRole> EditUserRole(int id, EditUserRoleDto dto) // TODO:вирішити як це зробити, бо назву можна змінити, але токени збережуться якими були
         {
-            var userRole = await context.UserRoles.FindAsync(id);
-
-            if (userRole == null)
-                throw new NotFoundException("User role not found");
-
+            var userRole = await context.UserRoles.FindAsync(id) ?? throw new NotFoundException("User role not found");
+            
             userRole.Name = dto.Name;
 
             await context.SaveChangesAsync();

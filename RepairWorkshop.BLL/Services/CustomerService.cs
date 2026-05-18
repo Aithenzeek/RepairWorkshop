@@ -5,8 +5,6 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
-using System.Numerics;
-using System.Xml;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -40,16 +38,14 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeleteCustomer(int id)
         {
-            var customer = await context.Customers.FindAsync(id);
+            var customer = await context.Customers.FindAsync(id) ?? throw new NotFoundException("Customer not found");
 
-            if (customer == null)
-                throw new NotFoundException("Customer not found");
-
-            var requests = await context.Requests.AnyAsync(r => r.CustomerId == id &&
-            r.Status != RequestStatus.Draft &&
-            r.Status != RequestStatus.Completed &&
-            r.Status != RequestStatus.Completed &&
-            r.Status != RequestStatus.PickedUp);
+            var requests = await context.Requests
+                .AnyAsync(r => r.CustomerId == id &&
+                    r.Status != RequestStatus.Draft &&
+                    r.Status != RequestStatus.Completed &&
+                    r.Status != RequestStatus.Completed &&
+                    r.Status != RequestStatus.PickedUp);
 
             if (requests == true)
                 throw new ConflictException("Cant delete customer with active requests");

@@ -30,22 +30,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeletePermission(int id)
         {
-            var permission = await context.Permissions.FindAsync(id);
-
-            if (permission == null)
-                throw new NotFoundException("premission not found");
-
+            var permission = await context.Permissions.FindAsync(id) ?? throw new NotFoundException("premission not found");
+            
             context.Permissions.Remove(permission);
             await context.SaveChangesAsync();
         }
 
         public async Task<Permission> EditPermission(int id, EditPermissionDto dto)
         {
-            var permission = await context.Permissions.FindAsync(id);
-
-            if (permission == null)
-                throw new NotFoundException("premission not found");
-
+            var permission = await context.Permissions.FindAsync(id) ?? throw new NotFoundException("premission not found");
+            
             var existingPermission = await context.Permissions.FirstOrDefaultAsync(p => p.Name == dto.Name);
 
             if (existingPermission != null && (existingPermission.Name == dto.Name || existingPermission.Code == dto.Code) && existingPermission.Id != permission.Id)

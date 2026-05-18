@@ -37,11 +37,8 @@ namespace RepairWorkshop.BLL.Services
         {
             var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
-                r.PermissionId == permissionId);
-
-            if (rolePermission == null)
-                throw new NotFoundException("role premission not found");
-
+                r.PermissionId == permissionId) ?? throw new NotFoundException("Role premission not found");
+            
             context.RolePermissions.Remove(rolePermission);
             await context.SaveChangesAsync();
         }
@@ -50,11 +47,8 @@ namespace RepairWorkshop.BLL.Services
         {
             var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
-                r.PermissionId == permissionId);
-
-            if (rolePermission == null)
-                throw new NotFoundException("role premission not found");
-
+                r.PermissionId == permissionId) ?? throw new NotFoundException("role premission not found");
+            
             var existingRolePermission = await context.RolePermissions.FirstOrDefaultAsync(r =>
             r.UserRoleId == dto.UserRoleId &&
             r.PermissionId == dto.PermissionId);

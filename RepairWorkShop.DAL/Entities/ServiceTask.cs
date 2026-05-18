@@ -24,8 +24,8 @@ namespace RepairWorkShop.DAL.Entities
 
             if (StartedAt == null)
                 StartedAt = DateTime.Now;
-
-            CompletedAt = DateTime.Now;
+            if (CompletedAt == null)
+                CompletedAt = DateTime.Now;
         }
 
         public void Complete()

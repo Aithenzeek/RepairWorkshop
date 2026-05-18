@@ -58,7 +58,8 @@ namespace RepairWorkShop.DAL.Entities
             //Status = RepairItemStatus.New;
 
             foreach (var task in ServiceTasks)
-                task.Status = ServiceTaskStatus.New;
+                if (task.Status == ServiceTaskStatus.Draft)
+                    task.Status = ServiceTaskStatus.New;
         }
 
         public void GetServiceCost()

@@ -12,19 +12,20 @@ namespace RepairWorkshop.BLL.Services
     {
         public async Task<ResponseRepairItemDto> CreateRepairItem(CreateRepairItemDto dto)
         {
-            var request = await context.Requests.FindAsync(dto.CustomerRequestId);
-
-            if (request == null)
-                throw new NotFoundException("request not found");
-
-            if (request.Status != RequestStatus.Draft)
-                throw new ConflictException("Cannot add to non-draft request"); // TODO: ше може зробити перевірку чи є такий ітем, але сенсу мало, бо він створюється тільки з статусом і ід реквеста
+            var request = await context.Requests.FindAsync(dto.CustomerRequestId) ?? throw new NotFoundException("request not found");
+            
+            if (request.Status != RequestStatus.Draft && request.Status != RequestStatus.CompletedByTechnician)
+                throw new ConflictException("Can add only to draft or completed by technician request"); // TODO: ше може зробити перевірку чи є такий ітем, але сенсу мало, бо він створюється тільки з статусом і ід реквеста
 
             var repairItem = new RepairItem
             {
                 CustomerRequestId = dto.CustomerRequestId,
                 Status = RepairItemStatus.Draft,
             };
+
+            if (request.Status != RequestStatus.Draft)
+            request.Status = RequestStatus.OnHold;
+            request.CompletedAt = null;
 
             await context.RepairItems.AddAsync(repairItem);
             await context.SaveChangesAsync();
@@ -34,13 +35,18 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task DeleteRepairItem(int id)
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
+            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("request not found");
 
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
-
+            //var repairItem = await context.RepairItems.FindAsync(id);
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+            
             if (repairItem.Status != RepairItemStatus.Draft)
                 throw new ConflictException("Only draft can be deleted");
+
+            request.RepairItems.Remove(repairItem);
+
+            if (request.RepairItems.All(r => r.Status == RepairItemStatus.Completed || r.Status == RepairItemStatus.Cancelled || r.Status == RepairItemStatus.CompletedByTechnician))
+                request.Status = RequestStatus.CompletedByTechnician;
 
             context.RepairItems.Remove(repairItem);
 
@@ -76,11 +82,14 @@ namespace RepairWorkshop.BLL.Services
             if (repairItem.ServiceTasks.Count == 0)
                 throw new NotFoundException("Can`t be started without any service task");
 
+            if (repairItem.Model == null || repairItem.Notes == null || repairItem.ProblemDescription == null || repairItem.SerialNumber == null)
+                throw new BadRequestException("Not all data filled");
+
             //if (repairItem.Status == RepairItemStatus.New)
             //    throw new ConflictException("Repair item already started");
 
-            if (repairItem.Status != RepairItemStatus.New)
-                throw new ConflictException("Only new can be started");
+            //if (repairItem.Status != RepairItemStatus.New)
+            //    throw new ConflictException("Only new can be started");
 
             repairItem.Start();
 
@@ -94,11 +103,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> CompleteRepairItem(int id) // видалити напевно або тільки зробити чисто для того шоб з виконаного техніком перевелося в виконане
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
-
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
-
+            var repairItem = await context.RepairItems.FindAsync(id) ?? throw new NotFoundException("Repair item not found");
+            
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -114,11 +120,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> CancelRepairItem(int id)
         {
-            var repairItem = await context.RepairItems.Include(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id);
-
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
-
+            var repairItem = await context.RepairItems.Include(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+            
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -153,11 +156,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> WaitForRepairItemParts(int id) //TODO: тут цього напевно не треба, бо воно буде братися з тасків
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
-
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
-
+            var repairItem = await context.RepairItems.FindAsync(id) ?? throw new NotFoundException("Repair item not found");
+            
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -170,11 +170,8 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id) // TODO: може забрати, бо автоматично з таска йде
         {
-            var repairItem = await context.RepairItems.FindAsync(id);
-
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
-
+            var repairItem = await context.RepairItems.FindAsync(id) ?? throw new NotFoundException("Repair item not found");
+            
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -189,13 +186,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var serialNumber = await context.RepairItems.AnyAsync(x => x.SerialNumber == dto.SerialNumber); //TODO: переробити, бо не вийде змінити його(не треба міняти, нормально робе)
 
-            if (serialNumber)
+            var repairItem = await context.RepairItems.FindAsync(id) ?? throw new NotFoundException("Repair item not found");
+            
+            if (serialNumber && repairItem.SerialNumber != dto.SerialNumber)
                 throw new ConflictException("Item with such serial number exists");
 
-            var repairItem = await context.RepairItems.FindAsync(id);
-
-            if (repairItem == null)
-                throw new NotFoundException("Repair item not found");
 
             repairItem.Model = dto.Model;
             repairItem.SerialNumber = dto.SerialNumber;

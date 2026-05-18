@@ -62,7 +62,9 @@ namespace RepairWorkshop.API.Controllers
         [Authorize(Roles = "Technician")]
         public async Task<IActionResult> StartServiceTask([FromRoute] int id)
         {
-            var serviceTask = await service.StartServiceTask(id);
+            var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var serviceTask = await service.StartServiceTask(id, technicianId);
 
             return Ok(serviceTask);
         }
@@ -71,7 +73,9 @@ namespace RepairWorkshop.API.Controllers
         [Authorize(Roles = "Technician")]
         public async Task<IActionResult> CompleteServiceTask([FromBody] CompleteServiceTaskDto dto)
         {
-            var serviceTask = await service.CompleteServiceTask(dto);
+            var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var serviceTask = await service.CompleteServiceTask(dto, technicianId);
 
             return Ok(serviceTask);
         }
@@ -80,7 +84,9 @@ namespace RepairWorkshop.API.Controllers
         [Authorize(Roles = "Technician")]
         public async Task<IActionResult> CancelServiceTask([FromRoute] int id)
         {
-            var serviceTask = await service.CancelServiceTask(id);
+            var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var serviceTask = await service.CancelServiceTask(id, technicianId);
 
             return Ok(serviceTask);
         }
@@ -89,7 +95,9 @@ namespace RepairWorkshop.API.Controllers
         [Authorize(Roles = "Technician")]
         public async Task<IActionResult> WaitForServiceTaskParts([FromRoute] int id)
         {
-            var serviceTask = await service.WaitForServiceTaskParts(id);
+            var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var serviceTask = await service.WaitForServiceTaskParts(id, technicianId);
 
             return Ok(serviceTask);
         }
@@ -98,7 +106,9 @@ namespace RepairWorkshop.API.Controllers
         [Authorize(Roles = "Technician")]
         public async Task<IActionResult> SetOnHoldServiceTask([FromRoute] int id)
         {
-            var serviceTask = await service.SetOnHoldServiceTask(id);
+            var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var serviceTask = await service.SetOnHoldServiceTask(id, technicianId);
 
             return Ok(serviceTask);
         }
