@@ -63,13 +63,11 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<ResponseServiceDto?> GetServiceById(int id)
+        public async Task<Service?> GetServiceById(int id)
         {
-            var service = await context.Services
+            return await context.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service not found");
-
-            return await ReturnDto(service);
         }
 
         public async Task<ResponseServiceDto> ActivateService(int id)

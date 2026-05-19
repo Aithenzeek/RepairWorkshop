@@ -5,6 +5,7 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
+using System.Xml;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -193,7 +194,7 @@ namespace RepairWorkshop.BLL.Services
             //return serviceTask;
         }
 
-        public async Task<ResponseServiceTaskDto> CancelServiceTask(int id, int technicianId) // TODO: треба кенсел доробити нормально
+        public async Task<ResponseServiceTaskDto> CancelServiceTask(int id, int technicianId, CancelServiceTaskDto dto) // TODO: треба кенсел доробити нормально
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
@@ -209,6 +210,8 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Can`t cancel draft or completed service task");
 
             serviceTask.Cancel();
+
+            serviceTask.CancellationReason = dto.CancellationReason;
 
             var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == serviceTask.RepairItemId) ?? throw new NotFoundException("Repair item not found");
 
@@ -375,15 +378,13 @@ namespace RepairWorkshop.BLL.Services
             return ReturnDto(serviceTask);
         }
 
-        public async Task<ResponseServiceTaskDto?> GetServiceTaskById(int id)
+        public async Task<ServiceTask?> GetServiceTaskById(int id)
         {
-            var serviceTask = await context.ServiceTasks
+            return await context.ServiceTasks
                 .AsNoTracking()
                 .Include(s => s.Service)
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
-
-            return ReturnDto(serviceTask);
         }
 
         public async Task<List<ServiceTask>> GetAllServiceTasks()

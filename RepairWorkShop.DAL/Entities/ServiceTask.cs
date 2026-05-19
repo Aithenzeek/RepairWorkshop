@@ -13,6 +13,7 @@ namespace RepairWorkShop.DAL.Entities
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public string? DiagnosticsResult { get; set; }
+        public string? CancellationReason { get; set; }
 
         public Service Service { get; set; } = null!;
         public RepairItem RepairItem { get; set; } = null!;

@@ -118,7 +118,7 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto> CancelRepairItem(int id)
+        public async Task<ResponseRepairItemDto> CancelRepairItem(int id, CancelRepairItemDto dto)
         {
             var repairItem = await context.RepairItems.Include(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
             
@@ -126,6 +126,8 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Not allowed in draft");
 
             repairItem.Cancel();
+
+            repairItem.CancellationReason = dto.CancellationReason;
 
             await context.SaveChangesAsync();
 
@@ -202,13 +204,11 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto?> GetRepairItemById(int id)
+        public async Task<RepairItem?> GetRepairItemById(int id)
         {
-            var repairItem = await context.RepairItems
+            return await context.RepairItems
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
-
-            return await ReturnDto(repairItem);
         }
 
         public async Task<List<RepairItem>> GetAllRepairItems()

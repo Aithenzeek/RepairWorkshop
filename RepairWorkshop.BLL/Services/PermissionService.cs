@@ -53,11 +53,9 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(permission);
         }
 
-        public async Task<ResponsePermissionDto?> GetPermissionById(int id)
+        public async Task<Permission?> GetPermissionById(int id)
         {
-            var permission = await context.Permissions.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException("Permission not found");
-
-            return await ReturnDto(permission);
+            return await context.Permissions.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException("Permission not found");
         }
 
         public async Task<List<Permission>> GetAllPermissions()

@@ -59,13 +59,11 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<ResponseUserRoleDto?> GetUserRoleById(int id)
+        public async Task<UserRole?> GetUserRoleById(int id)
         {
-            var userRole = await context.UserRoles
+            return await context.UserRoles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User role not found");
-
-            return await ReturnDto(userRole);
         }
 
         public async Task<ResponseUserRoleDto> ReturnDto(UserRole userRole)

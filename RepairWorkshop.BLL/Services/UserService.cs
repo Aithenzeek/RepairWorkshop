@@ -104,20 +104,27 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<ResponseUserDto?> GetUserById(int id)
+        public async Task<User?> GetUserById(int id)
         {
-            var user = await context.Users
+            return await context.Users
                 .AsNoTracking()
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
+        }
 
-            return await ReturnDto(user);
+        public async Task<User?> SearchUserByPhone(string phone)
+        {
+            return await context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Phone == phone);
         }
 
         // треба тільки для назначення ролей
         public async Task<User?> GetUserByPhone(string phone)
         {
             return await context.Users
+                .AsNoTracking()
                 .Include(u => u.Role)
                     .ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permission)

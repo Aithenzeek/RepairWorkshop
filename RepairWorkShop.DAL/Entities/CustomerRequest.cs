@@ -14,6 +14,7 @@ namespace RepairWorkShop.DAL.Entities
         public List<RepairItem> RepairItems { get; set; } = new();
         public Customer? Customer { get; set; }
         public User? Manager { get; set; }
+        public string? CancellationReason { get; set; }
 
         public void Cancel()
         {

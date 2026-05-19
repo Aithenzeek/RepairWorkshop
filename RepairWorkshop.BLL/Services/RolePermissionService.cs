@@ -64,13 +64,11 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(rolePermission);
         }
 
-        public async Task<ResponseRolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
+        public async Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
         {
-            var rolePermission = await context.RolePermissions
+            return await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
                 r.PermissionId == permissionId) ?? throw new NotFoundException("Role permission not found");
-
-            return await ReturnDto(rolePermission);
         }
 
         public async Task<List<RolePermission>> GetAllRolePermissions()

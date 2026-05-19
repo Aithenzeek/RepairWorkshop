@@ -49,7 +49,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<ResponseCustomerRequestDto> CancelRequest(int id)
+        public async Task<ResponseCustomerRequestDto> CancelRequest(int id, CancelCustomerRequestDto dto)
         {
             var request = await context.Requests.Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
             
@@ -57,6 +57,8 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Not allowed in draft or completed");
 
             request.Cancel();
+
+            request.CancellationReason = dto.CancellationReason;
 
             await context.SaveChangesAsync();
 
@@ -108,15 +110,13 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(request);
         }
 
-        public async Task<ResponseCustomerRequestDto?> GetRequestById(int id)
+        public async Task<CustomerRequest?> GetRequestById(int id)
         {
-            var request = await context.Requests
+            return await context.Requests
                 .AsNoTracking()
                 .Include(r => r.Customer)
                 .Include(r => r.Manager)
                 .FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException("Request not found");
-
-            return await ReturnDto(request);
         }
 
         public async Task<List<CustomerRequest>> GetAllRequests()

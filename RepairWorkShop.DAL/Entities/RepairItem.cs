@@ -14,6 +14,7 @@ namespace RepairWorkShop.DAL.Entities
         public double? ServiceCost { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public string? CancellationReason { get; set; }
 
         public CustomerRequest CustomerRequest { get; set; } = null!;
         public List<ServiceTask> ServiceTasks { get; set; } = [];

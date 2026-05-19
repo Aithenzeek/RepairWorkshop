@@ -8,7 +8,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponseRolePermission> CreateRolePermission(CreateRolePermissionDto dto);
         public Task DeleteRolePermission(int userRoleId, int permissionId);
         public Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto);
-        public Task<ResponseRolePermission?> GetRolePermissionById(int userRoleId, int permissionId);
+        public Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId);
         public Task<List<RolePermission>> GetAllRolePermissions();
     }
 }

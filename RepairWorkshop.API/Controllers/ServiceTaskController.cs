@@ -82,11 +82,11 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("cancel/{id}")]
         [Authorize(Roles = "Technician")]
-        public async Task<IActionResult> CancelServiceTask([FromRoute] int id)
+        public async Task<IActionResult> CancelServiceTask(int id, [FromBody] CancelServiceTaskDto dto)
         {
             var technicianId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            var serviceTask = await service.CancelServiceTask(id, technicianId);
+            var serviceTask = await service.CancelServiceTask(id, technicianId, dto);
 
             return Ok(serviceTask);
         }

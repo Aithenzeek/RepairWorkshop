@@ -61,9 +61,9 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("cancel/{id}")]
         [HasPermission("REQUEST_EDIT")]
-        public async Task<IActionResult> CancellRequest([FromRoute] int id)
+        public async Task<IActionResult> CancellRequest(int id, [FromBody] CancelCustomerRequestDto dto)
         {
-            var request = await service.CancelRequest(id);
+            var request = await service.CancelRequest(id, dto);
 
             return Ok(request);
         }

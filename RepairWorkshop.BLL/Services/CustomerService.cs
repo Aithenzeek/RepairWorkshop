@@ -81,13 +81,11 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(customer);
         }
 
-        public async Task<ResponseCustomerDto?> GetCustomerByPhone(string phone)
+        public async Task<Customer?> GetCustomerByPhone(string phone)
         {
-            var customer = await context.Customers
+            return await context.Customers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Phone == CheckPhone(phone)) ?? throw new NotFoundException("Customer not found");
-
-            return await ReturnDto(customer);
         }
 
         public async Task<List<Customer>> GetAllCustomers()

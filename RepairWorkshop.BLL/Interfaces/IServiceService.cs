@@ -9,7 +9,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task DeleteService(int id);
         public Task<ResponseServiceDto> EditService(int id, EditServiceDto dto);
         public Task<List<Service>> GetAllServices();
-        public Task<ResponseServiceDto?> GetServiceById(int id);
+        public Task<Service?> GetServiceById(int id);
         public Task<ResponseServiceDto> ActivateService(int id);
         public Task<ResponseServiceDto> InactivateService(int id);
 

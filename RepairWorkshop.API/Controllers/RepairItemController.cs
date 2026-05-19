@@ -78,9 +78,9 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpPatch("cancel/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
-        public async Task<IActionResult> CancelRepairItem([FromRoute] int id)
+        public async Task<IActionResult> CancelRepairItem(int id, [FromBody] CancelRepairItemDto dto)
         {
-            var repairItem = await service.CancelRepairItem(id);
+            var repairItem = await service.CancelRepairItem(id, dto);
 
             return Ok(repairItem);
         }

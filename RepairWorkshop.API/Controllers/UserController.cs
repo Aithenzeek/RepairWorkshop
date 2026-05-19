@@ -37,6 +37,15 @@ namespace RepairWorkshop.API.Controllers
             return Ok(user);
         }
 
+        [HttpGet("get-by-phone/{phone}")]
+        [HasPermission("USER_READ")]
+        public async Task<IActionResult> GetUserByPhone(string phone)
+        {
+            var user = await service.SearchUserByPhone(phone);
+
+            return Ok(user);
+        }
+
         [HttpPost("create")]
         [HasPermission("USER_CREATE")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
