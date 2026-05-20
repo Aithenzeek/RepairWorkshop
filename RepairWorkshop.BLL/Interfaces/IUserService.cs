@@ -13,5 +13,6 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<User?> GetUserById(int id);
         public Task<User?> GetUserByPhone(string phone);
         public Task<User?> SearchUserByPhone(string phone);
+        public Task<PagedResponse<ResponseUserDto>> GetPaged(int page = 1, int pageSize = 10);
     }
 }

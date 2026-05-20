@@ -53,5 +53,13 @@ namespace RepairWorkshop.API.Controllers
 
             return Ok();
         }
+
+        [HttpGet("get-paged")]
+        [HasPermission("PERMISSION_READ")]
+        public async Task<IActionResult> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var result = await service.GetPaged(page, pageSize);
+            return Ok(result);
+        }
     }
 }

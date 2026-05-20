@@ -11,14 +11,19 @@ namespace RepairWorkShop.DAL.Entities
         public RequestStatus Status { get; set; }
         public DateTime? CompletedAt { get; set; }
         public double TotalCost { get; set; }
+        public string? CancellationReason { get; set; }
+
         public List<RepairItem> RepairItems { get; set; } = new();
         public Customer? Customer { get; set; }
         public User? Manager { get; set; }
-        public string? CancellationReason { get; set; }
 
         public void Cancel()
         {
             Status = RequestStatus.Cancelled;
+            if (StartedAt == null)
+                StartedAt = DateTime.Now;
+            if (CompletedAt == null)
+                CompletedAt = DateTime.Now;
 
             foreach (var item in RepairItems)
                 item.Cancel();

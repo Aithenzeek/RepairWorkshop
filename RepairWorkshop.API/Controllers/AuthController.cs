@@ -27,6 +27,7 @@ namespace RepairWorkshop.API.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Name),
+                new Claim("phone", user.Phone),
                 new Claim(ClaimTypes.Role, user.Role.Name)
             };
 

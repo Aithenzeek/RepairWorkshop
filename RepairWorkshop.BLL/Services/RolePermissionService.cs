@@ -83,5 +83,29 @@ namespace RepairWorkshop.BLL.Services
                 rolePermission.PermissionId
                 );
         }
+
+        public async Task<PagedResponse<ResponseRolePermission>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.RolePermissions;
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseRolePermission(
+                    x.UserRoleId,
+                    x.PermissionId
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseRolePermission>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
     }
 }

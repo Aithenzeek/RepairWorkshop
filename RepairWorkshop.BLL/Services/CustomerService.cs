@@ -116,5 +116,30 @@ namespace RepairWorkshop.BLL.Services
                 customer.Phone
                 );
         }
+
+        public async Task<PagedResponse<ResponseCustomerDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.Customers;
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseCustomerDto(
+                    x.Id,
+                    x.Name,
+                    x.Phone
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseCustomerDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
     }
 }

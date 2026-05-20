@@ -22,7 +22,12 @@ namespace RepairWorkShop.DAL.Entities
         public void Cancel()
         {
             Status = RepairItemStatus.Cancelled;
-            CompletedAt = DateTime.Now;
+
+            if (StartedAt == null)
+                StartedAt = DateTime.Now;
+
+            if (CompletedAt == null)
+                CompletedAt = DateTime.Now;
 
             foreach (var task in ServiceTasks)
                 task.Cancel();

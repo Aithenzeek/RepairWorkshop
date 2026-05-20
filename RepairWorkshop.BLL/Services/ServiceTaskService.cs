@@ -5,7 +5,6 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
-using System.Xml;
 
 namespace RepairWorkshop.BLL.Services
 {
@@ -203,8 +202,8 @@ namespace RepairWorkshop.BLL.Services
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
 
-            if (serviceTask.UserId != technicianId)
-                throw new ConflictException("Cant do another technician work");
+            //if (serviceTask.UserId != technicianId)
+            //    throw new ConflictException("Cant do another technician work");
 
             if (serviceTask.Status == ServiceTaskStatus.Draft || serviceTask.Status == ServiceTaskStatus.Completed)
                 throw new ConflictException("Can`t cancel draft or completed service task");
@@ -355,7 +354,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> EditServiceTask(int id, EditServiceTaskDto dto)
         {
-            var serviceTask = await context.ServiceTasks.Include(s => s.Service).FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка. Зробити шоб повтора не було
+            var serviceTask = await context.ServiceTasks.Include(s => s.User).Include(s => s.Service).FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found"); //TODO статуси: в процесі і чернетка. Зробити шоб повтора не було
 
             var service = await context.Services.FindAsync(dto.ServiceId) ?? throw new NotFoundException("Service not found");
 
@@ -374,6 +373,8 @@ namespace RepairWorkshop.BLL.Services
             //    serviceTask.UserId = dto.UserId;
 
             await context.SaveChangesAsync();
+
+            serviceTask = await context.ServiceTasks.Include(s => s.User).Include(s => s.Service).FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
 
             return ReturnDto(serviceTask);
         }
@@ -425,8 +426,87 @@ namespace RepairWorkshop.BLL.Services
                 serviceTask.Status = serviceTask.Status,
                 serviceTask.StartedAt = serviceTask.StartedAt,
                 serviceTask.CompletedAt = serviceTask.CompletedAt,
-                serviceTask.DiagnosticsResult = serviceTask.DiagnosticsResult
+                serviceTask.DiagnosticsResult = serviceTask.DiagnosticsResult,
+                serviceTask.User.Name,
+                serviceTask.Service.Name
             );
+        }
+
+        public async Task<PagedResponse<ResponseServiceTaskDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.ServiceTasks;
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseServiceTaskDto(
+                    x.Id,
+                    x.RepairItemId,
+                    x.UserId,
+                    x.ServiceId,
+                    x.Cost,
+                    x.Status,
+                    x.StartedAt,
+                    x.CompletedAt,
+                    x.DiagnosticsResult,
+                    x.User.Name,
+                    x.Service.Name
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseServiceTaskDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<PagedResponse<ResponseServiceTaskDto>> GetActivePaged(int userId, bool activeOnly, int page = 1, int pageSize = 10)
+        {
+            var query = context.ServiceTasks.Where(t => t.UserId == userId);
+
+            if (activeOnly)
+            {
+                query = query
+                    .Include(s => s.Service)
+                    .Include(s => s.User)
+                    .Where(t =>
+                        t.Status != ServiceTaskStatus.Draft &&
+                        t.Status != ServiceTaskStatus.Completed &&
+                        t.Status != ServiceTaskStatus.Cancelled);
+            }
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseServiceTaskDto(
+                    x.Id,
+                    x.RepairItemId,
+                    x.UserId,
+                    x.ServiceId,
+                    x.Cost,
+                    x.Status,
+                    x.StartedAt,
+                    x.CompletedAt,
+                    x.DiagnosticsResult,
+                    x.User.Name,
+                    x.Service.Name
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseServiceTaskDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

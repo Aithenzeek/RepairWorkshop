@@ -4,6 +4,7 @@
         int Id,
         string Name,
         string Phone,
-        int RoleId
+        int RoleId,
+        string RoleName
     );
 }

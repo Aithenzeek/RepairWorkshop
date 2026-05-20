@@ -71,5 +71,30 @@ namespace RepairWorkshop.BLL.Services
                 permission.Code
                 );
         }
+
+        public async Task<PagedResponse<ResponsePermissionDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.Permissions;
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponsePermissionDto(
+                    x.Id,
+                    x.Name,
+                    x.Code
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponsePermissionDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
     }
 }

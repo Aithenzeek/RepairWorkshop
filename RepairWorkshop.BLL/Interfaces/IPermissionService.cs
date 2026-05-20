@@ -10,5 +10,6 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponsePermissionDto> EditPermission(int id, EditPermissionDto dto);
         public Task<Permission?> GetPermissionById(int id);
         public Task<List<Permission>> GetAllPermissions();
+        public Task<PagedResponse<ResponsePermissionDto>> GetPaged(int page = 1, int pageSize = 10);
     }
 }

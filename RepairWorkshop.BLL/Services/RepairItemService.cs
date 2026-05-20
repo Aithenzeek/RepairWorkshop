@@ -251,5 +251,78 @@ namespace RepairWorkshop.BLL.Services
                 repairItem.CompletedAt
             );
         }
+
+        public async Task<PagedResponse<ResponseRepairItemDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.RepairItems;
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseRepairItemDto(
+                    x.Id,
+                    x.CustomerRequestId,
+                    x.Model,
+                    x.SerialNumber,
+                    x.ProblemDescription,
+                    x.Notes,
+                    x.Status,
+                    x.ServiceCost,
+                    x.StartedAt,
+                    x.CompletedAt
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseRepairItemDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<PagedResponse<ResponseRepairItemDto>> GetActivePaged(int userId, bool activeOnly, int page = 1, int pageSize = 10)
+        {
+            var query = context.ServiceTasks.Where(q => q.UserId == userId).Select(q => q.RepairItem);
+
+            if (activeOnly)
+            {
+                query = query.Where(r => r.Status != RepairItemStatus.Draft &&
+                    r.Status != RepairItemStatus.Completed &&
+                    r.Status != RepairItemStatus.Cancelled &&
+                    r.Status != RepairItemStatus.CompletedByTechnician &&
+                    r.Status != RepairItemStatus.WaitingForPickUp);
+            }
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseRepairItemDto(
+                    x.Id,
+                    x.CustomerRequestId,
+                    x.Model,
+                    x.SerialNumber,
+                    x.ProblemDescription,
+                    x.Notes,
+                    x.Status,
+                    x.ServiceCost,
+                    x.StartedAt,
+                    x.CompletedAt
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseRepairItemDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
     }
 }

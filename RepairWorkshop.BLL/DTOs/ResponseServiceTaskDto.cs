@@ -11,6 +11,8 @@ namespace RepairWorkshop.BLL.DTOs
         ServiceTaskStatus Status,
         DateTime? StartedAt,
         DateTime? CompletedAt,
-        string? DiagnosticsResult
+        string? DiagnosticsResult,
+        string? UserName,
+        string? ServiceName
     );
 }

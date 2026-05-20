@@ -18,11 +18,11 @@ namespace RepairWorkshop.BLL.Services
             if (existingUser != null && dto.Phone != existingUser.Phone)
                 throw new ConflictException("User with this number exists");
 
-            if (existingCustomer != null &&  dto.Phone != existingCustomer.Phone)
+            if (existingCustomer != null && dto.Phone != existingCustomer.Phone)
                 throw new ConflictException("Customer with this number exists");
 
             var existingRole = await context.UserRoles.FindAsync(dto.RoleId) ?? throw new NotFoundException("User role not found");
-            
+
             var formattedPhone = CheckPhone(dto.Phone);
 
             var user = new User
@@ -57,7 +57,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseUserDto> EditUser(int id, EditUserDto dto)
         {
-            var user = await context.Users.FindAsync(id) ?? throw new NotFoundException("User not found");
+            var user = await context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
@@ -150,8 +150,37 @@ namespace RepairWorkshop.BLL.Services
                 user.Id,
                 user.Name,
                 user.Phone,
-                user.RoleId
+                user.RoleId,
+                user.Role.Name
                 );
+        }
+
+        public async Task<PagedResponse<ResponseUserDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.Users
+            .Include(x => x.Role);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseUserDto(
+                    x.Id,
+                    x.Name,
+                    x.Phone,
+                    x.RoleId,
+                    x.Role.Name
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseUserDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

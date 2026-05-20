@@ -5,8 +5,6 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Claims;
 
 
 namespace RepairWorkshop.BLL.Services
@@ -19,7 +17,7 @@ namespace RepairWorkshop.BLL.Services
         {
             var existingCustomer = await context.Customers.FindAsync(dto.CustomerId) ?? throw new NotFoundException("Customer not found");
             var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == managerId) ?? throw new NotFoundException("Manager not found");
-            
+
             if (existingManager.Role.Name != "Manager" && existingManager.Role.Name != "Superadmin")
                 throw new BadRequestException("Selected user is not manager"); // TODO: або тільки для менеджера або для нього і супер адміна
 
@@ -52,7 +50,7 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseCustomerRequestDto> CancelRequest(int id, CancelCustomerRequestDto dto)
         {
             var request = await context.Requests.Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
-            
+
             if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed)
                 throw new ConflictException("Not allowed in draft or completed");
 
@@ -68,7 +66,7 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseCustomerRequestDto> CompleteRequest(int id)
         {
             var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
-            
+
             if (request.Status != RequestStatus.CompletedByTechnician || request.RepairItems.All(r => r.Status != RepairItemStatus.Completed && r.Status != RepairItemStatus.Cancelled))
                 throw new ConflictException("Allowed when all repair items completed or cancelled");
 
@@ -99,7 +97,7 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseCustomerRequestDto> AllowPickUp(int id)
         {
             var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
-            
+
             if (request.Status == RequestStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -132,8 +130,8 @@ namespace RepairWorkshop.BLL.Services
         {
             var existingCustomer = await context.Customers.FindAsync(dto.CustomerId) ?? throw new NotFoundException("Customer not found");
 
-            var request = await context.Requests.FindAsync(id) ?? throw new NotFoundException("Request not found");
-            
+            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+
             request.CustomerId = dto.CustomerId;
 
             await context.SaveChangesAsync();
@@ -164,7 +162,7 @@ namespace RepairWorkshop.BLL.Services
             if (request.Status != RequestStatus.Draft)
                 throw new BadRequestException("Allowed only in draft"); // не можна робити дію
 
-            if(!request.RepairItems.Any())
+            if (!request.RepairItems.Any())
                 throw new ConflictException("No items in request");
 
             request.Start();
@@ -183,8 +181,45 @@ namespace RepairWorkshop.BLL.Services
                 request.StartedAt,
                 request.Status,
                 request.CompletedAt,
-                request.TotalCost
+                request.TotalCost,
+                request.CancellationReason,
+                request.Customer.Name,
+                request.Manager.Name
             );
+        }
+
+        public async Task<PagedResponse<ResponseCustomerRequestDto>> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var query = context.Requests
+                .Include(x => x.Customer)
+                .Include(x => x.Manager);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ResponseCustomerRequestDto(
+                    x.Id,
+                    x.CustomerId,
+                    x.ManagerId,
+                    x.StartedAt,
+                    x.Status,
+                    x.CompletedAt,
+                    x.TotalCost,
+                    x.CancellationReason,
+                    x.Customer.Name,
+                    x.Manager.Name
+                ))
+                .ToListAsync();
+
+            return new PagedResponse<ResponseCustomerRequestDto>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

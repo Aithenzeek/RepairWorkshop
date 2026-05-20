@@ -10,6 +10,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponseCustomerDto> EditCustomer(int id, EditCustomerDto dto);
         public Task<Customer?> GetCustomerByPhone(string phone);
         public Task<List<Customer>> GetAllCustomers();
+        public Task<PagedResponse<ResponseCustomerDto>> GetPaged(int page = 1, int pageSize = 10);
     }
 }
 

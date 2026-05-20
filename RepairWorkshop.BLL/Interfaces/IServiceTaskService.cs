@@ -16,5 +16,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ServiceTask?> GetServiceTaskById(int id);
         public Task<List<ServiceTask>> GetAllServiceTasks();
         public Task<List<ServiceTask>> GetAllActiveServiceTasks(int userId, bool activeOnly);
+        public Task<PagedResponse<ResponseServiceTaskDto>> GetPaged(int page = 1, int pageSize = 10);
+        public Task<PagedResponse<ResponseServiceTaskDto>> GetActivePaged(int userId, bool activeOnly, int page = 1, int pageSize = 10);
     }
 }

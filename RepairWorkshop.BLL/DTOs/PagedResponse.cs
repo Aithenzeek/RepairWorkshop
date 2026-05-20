@@ -1,6 +1,6 @@
 ﻿namespace RepairWorkshop.BLL.DTOs
 {
-    public class PagedResult<T>
+    public record PagedResponse<T>
     {
         public List<T> Items { get; set; } = [];
         public int TotalCount { get; set; }

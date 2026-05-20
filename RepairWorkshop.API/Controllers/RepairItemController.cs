@@ -129,5 +129,24 @@ namespace RepairWorkshop.API.Controllers
 
             return Ok(repairItem);
         }
+
+        [HttpGet("get-paged")]
+        public async Task<IActionResult> GetPaged(int page = 1, int pageSize = 10)
+        {
+            var result = await service.GetPaged(page, pageSize);
+
+            return Ok(result);
+        }
+
+        [HttpGet("get-active-paged")]
+        [Authorize(Roles = "Technician")]
+        public async Task<IActionResult> GetActivePaged(bool activeOnly, int page = 1, int pageSize = 10)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var repairItems = await service.GetActivePaged(userId, activeOnly, page, pageSize);
+
+            return Ok(repairItems);
+        }
     }
 }

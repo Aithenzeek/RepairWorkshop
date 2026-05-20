@@ -9,6 +9,9 @@ namespace RepairWorkshop.BLL.DTOs
         DateTime? StartedAt,
         RequestStatus Status,
         DateTime? CompletedAt,
-        double TotalCost
+        double TotalCost,
+        string? CancellationReason,
+        string? CustomerName,
+        string? ManagerName
     );
 }
