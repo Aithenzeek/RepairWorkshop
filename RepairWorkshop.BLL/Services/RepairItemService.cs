@@ -103,8 +103,10 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> CompleteRepairItem(int id) // видалити напевно або тільки зробити чисто для того шоб з виконаного техніком перевелося в виконане
         {
-            var repairItem = await context.RepairItems.FindAsync(id) ?? throw new NotFoundException("Repair item not found");
-            
+            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("Request not found");
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
@@ -113,6 +115,9 @@ namespace RepairWorkshop.BLL.Services
 
             repairItem.Complete();
 
+            if (request.RepairItems.All(r => r.Status == RepairItemStatus.Completed || r.Status == RepairItemStatus.Cancelled))
+                request.Status = RequestStatus.CompletedByTechnician;
+
             await context.SaveChangesAsync();
 
             return await ReturnDto(repairItem);
@@ -120,14 +125,19 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseRepairItemDto> CancelRepairItem(int id, CancelRepairItemDto dto)
         {
-            var repairItem = await context.RepairItems.Include(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
-            
+            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("Request not found");
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+
             if (repairItem.Status == RepairItemStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
 
             repairItem.Cancel();
 
             repairItem.CancellationReason = dto.CancellationReason;
+
+            if (request.RepairItems.All(r => r.Status == RepairItemStatus.Cancelled))
+                request.Status = RequestStatus.OnHold;
 
             await context.SaveChangesAsync();
 
@@ -248,19 +258,55 @@ namespace RepairWorkshop.BLL.Services
                 repairItem.Status,
                 repairItem.ServiceCost,
                 repairItem.StartedAt,
-                repairItem.CompletedAt
+                repairItem.CompletedAt,
+                repairItem.CancellationReason
             );
         }
 
-        public async Task<PagedResponse<ResponseRepairItemDto>> GetPaged(int page = 1, int pageSize = 10)
+        public async Task<PagedResponse<ResponseRepairItemDto>> GetPaged(RepairItemFilterDto filter)
         {
-            var query = context.RepairItems;
+            var query = context.RepairItems.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Status))
+            {
+                query = query.Where(x => x.Status.ToString() == filter.Status);
+            }
+
+            if (filter.DateFrom.HasValue)
+            {
+                query = query.Where(x => x.StartedAt >= filter.DateFrom.Value);
+            }
+
+            if (filter.DateTo.HasValue)
+            {
+                query = query.Where(x => x.StartedAt <= filter.DateTo.Value);
+            }
+
+            if (filter.CustomerRequestId.HasValue)
+            {
+                query = query.Where(x => x.CustomerRequestId == filter.CustomerRequestId.Value);
+            }
+
+            query = filter.SortBy?.ToLower() switch
+            {
+                "dateasc" => query.OrderBy(x => x.StartedAt),
+                "datedesc" => query.OrderByDescending(x => x.StartedAt),
+
+                "costasc" => query.OrderBy(x => x.ServiceCost),
+                "costdesc" => query.OrderByDescending(x => x.ServiceCost),
+
+                "requestasc" => query.OrderBy(x => x.CustomerRequestId).ThenBy(x => x.Id),
+
+                "requestdesc" => query.OrderByDescending(x => x.CustomerRequestId).ThenBy(x => x.Id),
+
+                _ => query.OrderByDescending(x => x.StartedAt)
+            };
 
             var total = await query.CountAsync();
 
             var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .Select(x => new ResponseRepairItemDto(
                     x.Id,
                     x.CustomerRequestId,
@@ -271,7 +317,8 @@ namespace RepairWorkshop.BLL.Services
                     x.Status,
                     x.ServiceCost,
                     x.StartedAt,
-                    x.CompletedAt
+                    x.CompletedAt,
+                    x.CancellationReason
                 ))
                 .ToListAsync();
 
@@ -279,8 +326,8 @@ namespace RepairWorkshop.BLL.Services
             {
                 Items = items,
                 TotalCount = total,
-                Page = page,
-                PageSize = pageSize
+                Page = filter.Page,
+                PageSize = filter.PageSize
             };
         }
 
@@ -312,7 +359,8 @@ namespace RepairWorkshop.BLL.Services
                     x.Status,
                     x.ServiceCost,
                     x.StartedAt,
-                    x.CompletedAt
+                    x.CompletedAt,
+                    x.CancellationReason
                 ))
                 .ToListAsync();
 

@@ -13,6 +13,7 @@ namespace RepairWorkshop.BLL.DTOs
         DateTime? CompletedAt,
         string? DiagnosticsResult,
         string? UserName,
-        string? ServiceName
+        string? ServiceName,
+        string? CancellationReason
     );
 }

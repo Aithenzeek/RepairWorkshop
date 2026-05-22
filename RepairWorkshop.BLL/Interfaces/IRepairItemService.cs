@@ -18,7 +18,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<RepairItem?> GetRepairItemById(int id);
         public Task<List<RepairItem>> GetAllRepairItems();
         public Task<List<RepairItem>> GetAllActiveRepairItems(int workerId, bool activeOnly);
-        public Task<PagedResponse<ResponseRepairItemDto>> GetPaged(int page = 1, int pageSize = 10);
+        public Task<PagedResponse<ResponseRepairItemDto>> GetPaged(RepairItemFilterDto filter);
         public Task<PagedResponse<ResponseRepairItemDto>> GetActivePaged(int userId, bool activeOnly, int page = 1, int pageSize = 10);
     }
 }

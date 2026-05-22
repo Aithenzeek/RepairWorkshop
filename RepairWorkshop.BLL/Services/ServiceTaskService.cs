@@ -14,7 +14,7 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == dto.RepairItemId)) ?? throw new NotFoundException("Request not found");
 
-            var existingRepairItem = await context.RepairItems.FindAsync(dto.RepairItemId) ?? throw new NotFoundException("Repair item not found");
+            var existingRepairItem = await context.RepairItems.Include(r => r.ServiceTasks).FirstOrDefaultAsync(r => r.Id == dto.RepairItemId) ?? throw new NotFoundException("Repair item not found");
 
             if (existingRepairItem.Status == RepairItemStatus.Completed ||
                 existingRepairItem.Status == RepairItemStatus.Cancelled ||
@@ -30,6 +30,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (service.Status == ServiceStatus.Inactive)
                 throw new ConflictException("Can`t add inactive service");
+
+            if (service.Name != "Diagnostics" && !existingRepairItem.ServiceTasks.Any())
+                throw new ConflictException("First item task must be diagnostics");
 
             var user = await context.Users.Include(r => r.Role).FirstOrDefaultAsync(u => u.Id == dto.UserId);
 
@@ -72,7 +75,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
-                .ThenInclude(i => i.ServiceTasks)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
@@ -109,7 +116,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
-                .ThenInclude(i => i.ServiceTasks)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == dto.Id))) ?? throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == dto.Id) ?? throw new NotFoundException("Service task not found");
@@ -196,8 +207,12 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseServiceTaskDto> CancelServiceTask(int id, int technicianId, CancelServiceTaskDto dto) // TODO: треба кенсел доробити нормально
         {
             var request = await context.Requests
-                .Include(r => r.RepairItems)
-                .ThenInclude(i => i.ServiceTasks)
+               .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
@@ -228,8 +243,12 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseServiceTaskDto> SetOnHoldServiceTask(int id, int technicianId)
         {
             var request = await context.Requests
-                .Include(r => r.RepairItems)
-                .ThenInclude(i => i.ServiceTasks)
+               .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
@@ -294,7 +313,11 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests
                 .Include(r => r.RepairItems)
-                .ThenInclude(i => i.ServiceTasks)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
                 .FirstOrDefaultAsync(r => r.RepairItems.Any(i => i.ServiceTasks.Any(t => t.Id == id))) ?? throw new NotFoundException("request not found");
 
             var serviceTask = request.RepairItems.SelectMany(s => s.ServiceTasks).FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
@@ -428,19 +451,60 @@ namespace RepairWorkshop.BLL.Services
                 serviceTask.CompletedAt = serviceTask.CompletedAt,
                 serviceTask.DiagnosticsResult = serviceTask.DiagnosticsResult,
                 serviceTask.User.Name,
-                serviceTask.Service.Name
+                serviceTask.Service.Name,
+                serviceTask.CancellationReason
             );
         }
 
-        public async Task<PagedResponse<ResponseServiceTaskDto>> GetPaged(int page = 1, int pageSize = 10)
+        public async Task<PagedResponse<ResponseServiceTaskDto>> GetPaged(ServiceTaskFilterDto filter)
         {
-            var query = context.ServiceTasks;
+            var query = context.ServiceTasks
+                .Include(x => x.User)
+                .Include(x => x.Service)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Status))
+            {
+                query = query.Where(x =>
+                    x.Status.ToString() == filter.Status);
+            }
+
+            if (filter.DateFrom.HasValue)
+            {
+                query = query.Where(x =>
+                    x.StartedAt >= filter.DateFrom.Value);
+            }
+
+            if (filter.DateTo.HasValue)
+            {
+                query = query.Where(x =>
+                    x.StartedAt <= filter.DateTo.Value);
+            }
+
+            if (filter.RepairItemId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.RepairItemId == filter.RepairItemId.Value);
+            }
+
+            query = filter.SortBy?.ToLower() switch
+            {
+                "dateasc" => query.OrderBy(x => x.StartedAt),
+                "datedesc" => query.OrderByDescending(x => x.StartedAt),
+
+                "status" => query.OrderBy(x => x.Status),
+
+                "costasc" => query.OrderBy(x => x.Cost),
+                "costdesc" => query.OrderByDescending(x => x.Cost),
+
+                _ => query.OrderByDescending(x => x.StartedAt)
+            };
 
             var total = await query.CountAsync();
 
             var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .Select(x => new ResponseServiceTaskDto(
                     x.Id,
                     x.RepairItemId,
@@ -452,7 +516,8 @@ namespace RepairWorkshop.BLL.Services
                     x.CompletedAt,
                     x.DiagnosticsResult,
                     x.User.Name,
-                    x.Service.Name
+                    x.Service.Name,
+                    x.CancellationReason
                 ))
                 .ToListAsync();
 
@@ -460,8 +525,8 @@ namespace RepairWorkshop.BLL.Services
             {
                 Items = items,
                 TotalCount = total,
-                Page = page,
-                PageSize = pageSize
+                Page = filter.Page,
+                PageSize = filter.PageSize
             };
         }
 
@@ -496,7 +561,8 @@ namespace RepairWorkshop.BLL.Services
                     x.CompletedAt,
                     x.DiagnosticsResult,
                     x.User.Name,
-                    x.Service.Name
+                    x.Service.Name,
+                    x.CancellationReason
                 ))
                 .ToListAsync();
 

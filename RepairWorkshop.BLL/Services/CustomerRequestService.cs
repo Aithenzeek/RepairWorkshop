@@ -5,6 +5,7 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
+using static System.Net.WebRequestMethods;
 
 
 namespace RepairWorkshop.BLL.Services
@@ -49,7 +50,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> CancelRequest(int id, CancelCustomerRequestDto dto)
         {
-            var request = await context.Requests.Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
             if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed)
                 throw new ConflictException("Not allowed in draft or completed");
@@ -65,7 +66,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> CompleteRequest(int id)
         {
-            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
             if (request.Status != RequestStatus.CompletedByTechnician || request.RepairItems.All(r => r.Status != RepairItemStatus.Completed && r.Status != RepairItemStatus.Cancelled))
                 throw new ConflictException("Allowed when all repair items completed or cancelled");
@@ -96,10 +97,13 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> AllowPickUp(int id)
         {
-            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
             if (request.Status == RequestStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
+
+            if (request.RepairItems.All(r => r.Status != RepairItemStatus.Cancelled && r.Status != RepairItemStatus.Completed))
+                throw new ConflictException("Can be allowed to pick up when all items cancelled or completed");
 
             request.AllowPickUp();
 
@@ -155,7 +159,7 @@ namespace RepairWorkshop.BLL.Services
         // переробити
         public async Task<ResponseCustomerRequestDto> StartRequest(int id) // TODO: може забрати якшо робити, шо воно буде через ітем йти
         {
-            var request = await context.Requests.Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id)
+            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException("Request not found");
 
             // invalidState по статусу валідацію, загальна помилка 
@@ -188,22 +192,47 @@ namespace RepairWorkshop.BLL.Services
             );
         }
 
-        public async Task<PagedResponse<ResponseCustomerRequestDto>> GetPaged(int page = 1, int pageSize = 10)
+        public async Task<PagedResponse<ResponseCustomerRequestDto>> GetPaged(RequestFilterDto filter)
         {
             var query = context.Requests
                 .Include(x => x.Customer)
-                .Include(x => x.Manager);
+                .Include(x => x.Manager)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Status))
+            {
+                query = query.Where(x => x.Status.ToString() == filter.Status);
+            }
+
+            if (filter.DateFrom.HasValue)
+            {
+                query = query.Where(x => x.StartedAt >= filter.DateFrom);
+            }
+
+            if (filter.DateTo.HasValue)
+            {
+                query = query.Where(x => x.StartedAt <= filter.DateTo);
+            }
+
+            query = filter.SortBy?.ToLower() switch
+            {
+                "date" => query.OrderByDescending(x => x.StartedAt),
+
+                "status" => query.OrderBy(x => x.Status),
+
+                _ => query.OrderByDescending(x => x.StartedAt)
+            };
 
             var total = await query.CountAsync();
 
             var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .Select(x => new ResponseCustomerRequestDto(
                     x.Id,
                     x.CustomerId,
                     x.ManagerId,
-                    x.StartedAt,
+                    x.StartedAt,    
                     x.Status,
                     x.CompletedAt,
                     x.TotalCost,
@@ -217,8 +246,8 @@ namespace RepairWorkshop.BLL.Services
             {
                 Items = items,
                 TotalCount = total,
-                Page = page,
-                PageSize = pageSize
+                Page = filter.Page,
+                PageSize = filter.PageSize
             };
         }
     }

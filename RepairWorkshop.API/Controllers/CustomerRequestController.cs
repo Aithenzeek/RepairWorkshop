@@ -2,6 +2,7 @@
 using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
+using RepairWorkShop.DAL.Enums;
 using System.Security.Claims;
 
 namespace RepairWorkshop.API.Controllers
@@ -106,10 +107,16 @@ namespace RepairWorkshop.API.Controllers
 
         [HttpGet("get-paged")]
         [HasPermission("REQUEST_READ")]
-        public async Task<IActionResult> GetPaged(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetPaged([FromQuery] RequestFilterDto filter)
         {
-            var result = await service.GetPaged(page, pageSize);
+            var result = await service.GetPaged(filter);
             return Ok(result);
+        }
+
+        [HttpGet("statuses")]
+        public IActionResult GetStatuses()
+        {
+            return Ok(Enum.GetNames(typeof(RequestStatus)));
         }
     }
 }

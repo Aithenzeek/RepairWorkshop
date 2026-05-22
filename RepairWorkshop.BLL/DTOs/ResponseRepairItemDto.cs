@@ -12,6 +12,7 @@ namespace RepairWorkshop.BLL.DTOs
         RepairItemStatus Status,
         double? ServiceCost,
         DateTime? StartedAt,
-        DateTime? CompletedAt
+        DateTime? CompletedAt,
+        string? CancellationReason
     );
 }

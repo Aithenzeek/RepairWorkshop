@@ -15,6 +15,6 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<List<CustomerRequest>> GetAllRequests();
         public Task<ResponseCustomerRequestDto> EditRequest(int id, EditCustomerRequestDto dto);
         public Task<ResponseCustomerRequestDto> StartRequest(int id);
-        public Task<PagedResponse<ResponseCustomerRequestDto>> GetPaged(int page = 1, int pageSize = 10);
+        public Task<PagedResponse<ResponseCustomerRequestDto>> GetPaged(RequestFilterDto filter);
     }
 }
