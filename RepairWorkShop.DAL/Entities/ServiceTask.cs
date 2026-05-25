@@ -2,7 +2,7 @@
 
 namespace RepairWorkShop.DAL.Entities
 {
-    public class ServiceTask
+    public class ServiceTask : AuditableEntity
     {
         public int Id { get; set; }
         public int RepairItemId { get; set; }

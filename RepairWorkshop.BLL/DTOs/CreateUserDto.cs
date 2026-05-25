@@ -1,6 +1,4 @@
-﻿using RepairWorkShop.DAL.Entities;
-
-namespace RepairWorkshop.BLL.DTOs
+﻿namespace RepairWorkshop.BLL.DTOs
 {
     public record CreateUserDto(
         string Name,

@@ -14,7 +14,7 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.FindAsync(dto.CustomerRequestId) ?? throw new NotFoundException("request not found");
             
-            if (request.Status != RequestStatus.Draft && request.Status != RequestStatus.CompletedByTechnician)
+            if (request.Status != RequestStatus.Draft && request.Status != RequestStatus.CompletedByTechnician && request.Status != RequestStatus.OnHold)
                 throw new ConflictException("Can add only to draft or completed by technician request"); // TODO: ше може зробити перевірку чи є такий ітем, але сенсу мало, бо він створюється тільки з статусом і ід реквеста
 
             var repairItem = new RepairItem
@@ -91,10 +91,13 @@ namespace RepairWorkshop.BLL.Services
             //if (repairItem.Status != RepairItemStatus.New)
             //    throw new ConflictException("Only new can be started");
 
+            if (!repairItem.ServiceTasks.Any())
+                throw new ConflictException("Repair item must have service tasks");
+
             repairItem.Start();
 
-            if (request.RepairItems.Any(r => r.Status == RepairItemStatus.New))
-                request.Status = RequestStatus.New;
+            //if (request.RepairItems.Any(r => r.Status == RepairItemStatus.New))
+            //    request.Status = RequestStatus.New;
 
             await context.SaveChangesAsync();
 

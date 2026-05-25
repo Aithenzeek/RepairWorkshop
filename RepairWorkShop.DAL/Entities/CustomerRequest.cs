@@ -2,7 +2,7 @@
 
 namespace RepairWorkShop.DAL.Entities
 {
-    public class CustomerRequest
+    public class CustomerRequest : AuditableEntity
     {
         public int Id { get; set; }
         public int? CustomerId { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace RepairWorkShop.DAL.Entities
 {
-    public class RolePermission
+    public class RolePermission : AuditableEntity
     {
         public int UserRoleId { get; set; }
         public int PermissionId { get; set; }

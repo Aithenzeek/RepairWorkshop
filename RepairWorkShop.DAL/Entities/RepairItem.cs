@@ -2,7 +2,7 @@
 
 namespace RepairWorkShop.DAL.Entities
 {
-    public class RepairItem
+    public class RepairItem : AuditableEntity
     {
         public int Id { get; set; }
         public int CustomerRequestId { get; set; }
@@ -61,7 +61,8 @@ namespace RepairWorkShop.DAL.Entities
 
         public void Start()
         {
-            //Status = RepairItemStatus.New;
+            if (Status == RepairItemStatus.Draft && CustomerRequest.Status != RequestStatus.Draft && CustomerRequest.Status != RequestStatus.Completed && CustomerRequest.Status != RequestStatus.Cancelled && CustomerRequest.Status != RequestStatus.WaitingForPickUp)
+                Status = RepairItemStatus.New;
 
             foreach (var task in ServiceTasks)
                 if (task.Status == ServiceTaskStatus.Draft)

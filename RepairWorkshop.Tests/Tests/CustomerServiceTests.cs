@@ -7,7 +7,7 @@ namespace RepairWorkshop.Tests.Tests
     public class CustomerServiceTests : TestBase
     {
         [Fact]
-        public void CheckPhone_ValidFullNumber_ReturnsSame()
+        public void CheckPhoneValidFullNumberReturnsSame()
         {
             var input = "380971234567";
 
@@ -17,7 +17,7 @@ namespace RepairWorkshop.Tests.Tests
         }
 
         [Fact]
-        public async Task CheckPhone_ShouldCheckPhone()
+        public async Task CheckPhoneShouldCheckPhone()
         {
             var context = GetDbContext();
 
@@ -31,7 +31,7 @@ namespace RepairWorkshop.Tests.Tests
         }
 
         [Fact]
-        public void CheckPhone_InvalidPhone_ThrowsException()
+        public void CheckPhoneInvalidPhoneThrowsException()
         {
             var input = "abc123";
 
@@ -40,7 +40,7 @@ namespace RepairWorkshop.Tests.Tests
         }
 
         [Fact]
-        public void CheckPhone_RemovesNonDigitsBeforeProcessing()
+        public void CheckPhoneRemovesNonDigitsBeforeProcessing()
         {
             var input = "+380 (97) 123-45-67";
 

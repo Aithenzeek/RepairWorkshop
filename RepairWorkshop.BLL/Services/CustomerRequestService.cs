@@ -52,7 +52,7 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed)
+            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed || request.Status == RequestStatus.WaitingForPickUp)
                 throw new ConflictException("Not allowed in draft or completed");
 
             request.Cancel();
@@ -135,6 +135,9 @@ namespace RepairWorkshop.BLL.Services
             var existingCustomer = await context.Customers.FindAsync(dto.CustomerId) ?? throw new NotFoundException("Customer not found");
 
             var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+
+            if (request.Status != RequestStatus.Draft)
+                throw new ConflictException("Cand edit non draft request");
 
             request.CustomerId = dto.CustomerId;
 

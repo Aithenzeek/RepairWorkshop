@@ -15,7 +15,7 @@ namespace RepairWorkshop.BLL.Services
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
-            if (existingUser != null && dto.Phone != existingUser.Phone)
+            if (existingUser != null && dto.Phone == existingUser.Phone)
                 throw new ConflictException("User with this number exists");
 
             if (existingCustomer != null && dto.Phone != existingCustomer.Phone)
@@ -28,7 +28,7 @@ namespace RepairWorkshop.BLL.Services
             var user = new User
             {
                 Name = dto.Name,
-                Phone = dto.Phone,
+                Phone = formattedPhone,
                 RoleId = dto.RoleId,
             };
 
@@ -62,7 +62,7 @@ namespace RepairWorkshop.BLL.Services
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
-            if (existingUser != null && (dto.Phone == existingUser.Phone && dto.Phone != existingUser.Phone))
+            if (existingUser != null && dto.Phone == existingUser.Phone && id != existingUser.Id)
                 throw new ConflictException("User with this number exists");
 
             if (existingCustomer != null && dto.Phone != existingCustomer.Phone)
@@ -79,7 +79,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Cant change role of user with active tasks");
 
             user.Name = dto.Name;
-            user.Phone = dto.Phone;
+            user.Phone = formattedPhone;
             user.RoleId = dto.RoleId;
 
             await context.SaveChangesAsync();

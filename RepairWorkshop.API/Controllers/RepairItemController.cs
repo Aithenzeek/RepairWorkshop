@@ -154,6 +154,7 @@ namespace RepairWorkshop.API.Controllers
         public IActionResult GetStatuses()
         {
             var statuses = Enum.GetNames(typeof(RepairItemStatus));
+
             return Ok(statuses);
         }
     }
