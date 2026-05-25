@@ -43,7 +43,7 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto) // TODO: може забрати взагалі, бо легше буде нове створити чим редагувати старе
+        public async Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto)
         {
             var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&

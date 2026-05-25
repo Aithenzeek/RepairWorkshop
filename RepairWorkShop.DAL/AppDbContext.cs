@@ -16,47 +16,9 @@ namespace RepairWorkShop.DAL
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public string DbPath { get; }
-        private readonly ICurrentUserService? _currentUser;
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
-           : base(options)
-        {
-            //var folder = Environment.SpecialFolder.LocalApplicationData;
-            //var path = Environment.GetFolderPath(folder);
-
-            //DbPath = System.IO.Path.Join(path, "app.db");
-        }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{ 
-        //    optionsBuilder.UseSqlite($"Data Source={DbPath}");
-        //}
-
-        //public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        //{
-        //    var entries = ChangeTracker
-        //        .Entries<AuditableEntity>();
-
-        //    var now = DateTime.Now;
-        //    var userId = _currentUser?.UserId ?? "system";
-
-        //    foreach (var entry in entries)
-        //    {
-        //        if (entry.State == EntityState.Added)
-        //        {
-        //            entry.Entity.CreatedAt = now;
-        //            entry.Entity.CreatedBy = userId;
-        //        }
-
-        //        if (entry.State == EntityState.Modified)
-        //        {
-        //            entry.Entity.UpdatedAt = now;
-        //            entry.Entity.UpdatedBy = userId;
-        //        }
-        //    }
-
-        //    return await base.SaveChangesAsync(cancellationToken);
-        //}
+           : base(options){ }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

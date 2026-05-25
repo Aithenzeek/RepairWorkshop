@@ -86,15 +86,6 @@ namespace RepairWorkshop.API.Controllers
             return Ok(repairItem);
         }
 
-        //[HttpPatch("approve")]
-        //[HasPermission("REPAIR_ITEM_EDIT")]
-        //public async Task<IActionResult> ApproveRepairItem([FromBody] int id)
-        //{
-        //    var repairItem = await service.ApproveRepairItem(id);
-
-        //    return Ok(repairItem);
-        //}
-
         [HttpPatch("allow-pick-up/{id}")]
         [HasPermission("REPAIR_ITEM_EDIT")]
         public async Task<IActionResult> AllowPickUpRepairItem([FromRoute] int id)

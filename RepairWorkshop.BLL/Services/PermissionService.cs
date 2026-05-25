@@ -42,7 +42,10 @@ namespace RepairWorkshop.BLL.Services
             
             var existingPermission = await context.Permissions.FirstOrDefaultAsync(p => p.Name == dto.Name);
 
-            if (existingPermission != null && (existingPermission.Name == dto.Name || existingPermission.Code == dto.Code) && existingPermission.Id != permission.Id)
+            if (existingPermission != null &&
+                (existingPermission.Name == dto.Name ||
+                existingPermission.Code == dto.Code) &&
+                existingPermission.Id != permission.Id)
                 throw new ConflictException("Permission with this parameters exists");
 
             permission.Name = dto.Name;
@@ -55,7 +58,9 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<Permission?> GetPermissionById(int id)
         {
-            return await context.Permissions.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException("Permission not found");
+            return await context.Permissions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException("Permission not found");
         }
 
         public async Task<List<Permission>> GetAllPermissions()

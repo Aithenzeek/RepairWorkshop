@@ -1,18 +1,12 @@
-using Microsoft.EntityFrameworkCore;
 using RepairWorkshop.API.Extensions;
 using RepairWorkshop.API.Services;
-using RepairWorkShop.DAL;
-using RepairWorkShop.DAL.Enums;
 using RepairWorkShop.DAL.Interceptors;
 using RepairWorkShop.DAL.Interfaces;
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-//builder.Services.AddControllers();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -51,15 +45,6 @@ builder.Services
     .AddAuth()
     .AddPermission();
 
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//{
-//    var path = Path.Combine(
-//        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-//        "app.db");
-
-//    options.UseSqlite($"Data Source={path}");
-//});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -69,27 +54,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
 app.UseExceptionHandler();
 
 app.UseAuthentication();
-
-//app.Use(async (context, next) =>
-//{
-//    var currentUser = context.RequestServices.GetRequiredService<ICurrentUserService>();
-
-//    var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-//    if (currentUser is CurrentUserService typed)
-//    {
-//        typed.SetUser(userId);
-//    }
-
-//    await next();
-//});
 
 app.UseAuthorization();
 

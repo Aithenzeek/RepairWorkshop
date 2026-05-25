@@ -57,7 +57,9 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseUserDto> EditUser(int id, EditUserDto dto)
         {
-            var user = await context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
+            var user = await context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);

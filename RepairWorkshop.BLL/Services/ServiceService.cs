@@ -35,7 +35,6 @@ namespace RepairWorkshop.BLL.Services
             
             service.Status = ServiceStatus.Inactive;
 
-            //context.Services.Remove(service);
             await context.SaveChangesAsync();
         }
 

@@ -56,6 +56,6 @@ namespace RepairWorkshop.API.Controllers
 
     public class LoginRequest
     {
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
     }
 }

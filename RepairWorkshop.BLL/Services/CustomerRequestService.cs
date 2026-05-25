@@ -5,7 +5,6 @@ using RepairWorkshop.BLL.Interfaces;
 using RepairWorkShop.DAL;
 using RepairWorkShop.DAL.Entities;
 using RepairWorkShop.DAL.Enums;
-using static System.Net.WebRequestMethods;
 
 
 namespace RepairWorkshop.BLL.Services
@@ -20,7 +19,7 @@ namespace RepairWorkshop.BLL.Services
             var existingManager = await context.Users.Include(m => m.Role).FirstOrDefaultAsync(m => m.Id == managerId) ?? throw new NotFoundException("Manager not found");
 
             if (existingManager.Role.Name != "Manager" && existingManager.Role.Name != "Superadmin")
-                throw new BadRequestException("Selected user is not manager"); // TODO: або тільки для менеджера або для нього і супер адміна
+                throw new BadRequestException("Selected user is not manager");
 
             var customerRequest = new CustomerRequest
             {
@@ -50,9 +49,16 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> CancelRequest(int id, CancelCustomerRequestDto dto)
         {
-            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).ThenInclude(s => s.ServiceTasks).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
+                .Include(r => r.RepairItems)
+                .ThenInclude(s => s.ServiceTasks)
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
-            if (request.Status == RequestStatus.Draft || request.Status == RequestStatus.Completed || request.Status == RequestStatus.WaitingForPickUp)
+            if (request.Status == RequestStatus.Draft ||
+                request.Status == RequestStatus.Completed ||
+                request.Status == RequestStatus.WaitingForPickUp)
                 throw new ConflictException("Not allowed in draft or completed");
 
             request.Cancel();
@@ -66,9 +72,15 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseCustomerRequestDto> CompleteRequest(int id)
         {
-            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
+                .Include(r => r.RepairItems)
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
-            if (request.Status != RequestStatus.CompletedByTechnician || request.RepairItems.All(r => r.Status != RepairItemStatus.Completed && r.Status != RepairItemStatus.Cancelled))
+            if (request.Status != RequestStatus.CompletedByTechnician ||
+                request.RepairItems.All(r => r.Status != RepairItemStatus.Completed &&
+                r.Status != RepairItemStatus.Cancelled))
                 throw new ConflictException("Allowed when all repair items completed or cancelled");
 
             request.Complete();
@@ -78,26 +90,13 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(request);
         }
 
-        //public async Task<CustomerRequest> ApproveRequest(int id)
-        //{
-        //    var request = await context.Requests.FindAsync(id);
-
-        //    if (request == null)
-        //        throw new NotFoundException("Request not found");
-
-        //    if (request.Status == RequestStatus.Draft)
-        //        throw new ConflictException("Not allowed in draft");
-
-        //    request.Status = RequestStatus.Approved;
-
-        //    await context.SaveChangesAsync();
-
-        //    return request;
-        //}
-
         public async Task<ResponseCustomerRequestDto> AllowPickUp(int id)
         {
-            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
+                .Include(r => r.RepairItems)
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
             if (request.Status == RequestStatus.Draft)
                 throw new ConflictException("Not allowed in draft");
@@ -134,7 +133,10 @@ namespace RepairWorkshop.BLL.Services
         {
             var existingCustomer = await context.Customers.FindAsync(dto.CustomerId) ?? throw new NotFoundException("Customer not found");
 
-            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+            var request = await context.Requests
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
 
             if (request.Status != RequestStatus.Draft)
                 throw new ConflictException("Cand edit non draft request");
@@ -146,28 +148,17 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(request);
         }
 
-        //public async Task<CustomerRequest> AssingCustomer(int id, int customerId)
-        //{
-        //    var request = await context.Requests.FindAsync(id);
-
-        //    if (request == null)
-        //        throw new NotFoundException("Request not found");
-
-        //    request.CustomerId = customerId;
-
-        //    await context.SaveChangesAsync();
-
-        //    return request;
-        //}
-        // переробити
-        public async Task<ResponseCustomerRequestDto> StartRequest(int id) // TODO: може забрати якшо робити, шо воно буде через ітем йти
+        public async Task<ResponseCustomerRequestDto> StartRequest(int id)
         {
-            var request = await context.Requests.Include(r => r.Customer).Include(r => r.Manager).Include(r => r.RepairItems).FirstOrDefaultAsync(r => r.Id == id)
+            var request = await context.Requests
+                .Include(r => r.Customer)
+                .Include(r => r.Manager)
+                .Include(r => r.RepairItems)
+                .FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException("Request not found");
-
-            // invalidState по статусу валідацію, загальна помилка 
+ 
             if (request.Status != RequestStatus.Draft)
-                throw new BadRequestException("Allowed only in draft"); // не можна робити дію
+                throw new BadRequestException("Allowed only in draft");
 
             if (!request.RepairItems.Any())
                 throw new ConflictException("No items in request");
@@ -190,8 +181,8 @@ namespace RepairWorkshop.BLL.Services
                 request.CompletedAt,
                 request.TotalCost,
                 request.CancellationReason,
-                request.Customer.Name,
-                request.Manager.Name
+                request.Customer?.Name,
+                request.Manager?.Name
             );
         }
 
@@ -235,13 +226,13 @@ namespace RepairWorkshop.BLL.Services
                     x.Id,
                     x.CustomerId,
                     x.ManagerId,
-                    x.StartedAt,    
+                    x.StartedAt,
                     x.Status,
                     x.CompletedAt,
                     x.TotalCost,
                     x.CancellationReason,
-                    x.Customer.Name,
-                    x.Manager.Name
+                    x.Customer!.Name,
+                    x.Manager!.Name
                 ))
                 .ToListAsync();
 

@@ -2,7 +2,6 @@
 using RepairWorkshop.API.Authorization;
 using RepairWorkshop.BLL.DTOs;
 using RepairWorkshop.BLL.Interfaces;
-using RepairWorkShop.DAL.Entities;
 
 namespace RepairWorkshop.API.Controllers
 {
