@@ -13,6 +13,7 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<ResponseRepairItemDto> AllowPickUpRepairItem(int id);
         public Task<ResponseRepairItemDto> WaitForRepairItemParts(int id);
         public Task<ResponseRepairItemDto> SetOnHoldRepairItemWork(int id);
+        public Task<ResponseRepairItemDto> PickUp(int id);
         public Task<ResponseRepairItemDto> EditRepairItem(int id, EditRepairItemDto dto);
         public Task<RepairItem?> GetRepairItemById(int id);
         public Task<List<RepairItem>> GetAllRepairItems();

@@ -59,6 +59,11 @@ namespace RepairWorkShop.DAL.Entities
             Status = RepairItemStatus.WaitingForPickUp;
         }
 
+        public void PickUp()
+        {
+            Status = RepairItemStatus.PickedUp;
+        }
+
         public void Start()
         {
             if (Status == RepairItemStatus.Draft &&

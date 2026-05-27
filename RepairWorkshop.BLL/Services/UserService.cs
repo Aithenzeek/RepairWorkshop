@@ -104,7 +104,7 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<List<User>> GetAllTechnicians() // не використовується
+        public async Task<List<User>> GetAllTechnicians()
         {
             return await context.Users
                 .AsNoTracking()

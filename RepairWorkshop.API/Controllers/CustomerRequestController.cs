@@ -78,6 +78,15 @@ namespace RepairWorkshop.API.Controllers
             return Ok(request);
         }
 
+        [HttpPatch("pick-up/{id}")]
+        [HasPermission("REQUEST_EDIT")]
+        public async Task<IActionResult> PickUp([FromRoute] int id)
+        {
+            var request = await service.PickUp(id);
+
+            return Ok(request);
+        }
+
         [HttpPatch("edit/{id}")]
         [HasPermission("REQUEST_EDIT")]
         public async Task<IActionResult> EditRequest(int id, [FromBody] EditCustomerRequestDto dto)

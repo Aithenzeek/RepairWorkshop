@@ -132,7 +132,7 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(repairItem);
         }
 
-        public async Task<ResponseRepairItemDto> AllowPickUpRepairItem(int id) //TODO: додати це
+        public async Task<ResponseRepairItemDto> AllowPickUpRepairItem(int id)
         {
             var request = await GetRequestWithoutTasks(id);
 
@@ -177,6 +177,30 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Not allowed in draft");
 
             repairItem.Status = RepairItemStatus.OnHold;
+
+            await context.SaveChangesAsync();
+
+            return await ReturnDto(repairItem);
+        }
+
+        public async Task<ResponseRepairItemDto> PickUp(int id)
+        {
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .FirstOrDefaultAsync(r => r.RepairItems.Any(r => r.Id == id)) ?? throw new NotFoundException("Request not found");
+
+            var repairItem = request.RepairItems.FirstOrDefault(r => r.Id == id) ?? throw new NotFoundException("Repair item not found");
+
+            if (repairItem.Status == RepairItemStatus.Draft)
+                throw new ConflictException("Not allowed in draft");
+
+            if (repairItem.Status != RepairItemStatus.WaitingForPickUp)
+                throw new ConflictException("Allowed when waiting for pickup");
+
+            repairItem.PickUp();
+
+            if (request.RepairItems.All(r => r.Status == RepairItemStatus.PickedUp || r.Status == RepairItemStatus.Cancelled))
+                request.Status = RequestStatus.PickedUp;
 
             await context.SaveChangesAsync();
 

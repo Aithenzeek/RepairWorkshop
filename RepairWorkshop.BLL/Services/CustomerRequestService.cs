@@ -77,10 +77,10 @@ namespace RepairWorkshop.BLL.Services
         {
             var request = await GetRequestWithoutTasks(id);
 
-            if (request.Status != RequestStatus.CompletedByTechnician &&
+            if (request.Status != RequestStatus.CompletedByTechnician ||
                 request.RepairItems.All(r => r.Status != RepairItemStatus.Completed &&
                 r.Status != RepairItemStatus.Cancelled))
-                throw new ConflictException("Allowed when all repair items completed or cancelled");
+                throw new ConflictException("Allowed when request completed by technician and all repair items completed or cancelled");
 
             request.Complete();
 
@@ -97,9 +97,26 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Not allowed in draft");
 
             if (request.RepairItems.All(r => r.Status != RepairItemStatus.Cancelled && r.Status != RepairItemStatus.Completed))
-                throw new ConflictException("Can be allowed to pick up when all items cancelled or completed");
+                throw new ConflictException("Can be allowed to pickup when all items cancelled or completed");
 
             request.AllowPickUp();
+
+            await context.SaveChangesAsync();
+
+            return await ReturnDto(request);
+        }
+
+        public async Task<ResponseCustomerRequestDto> PickUp(int id)
+        {
+            var request = await context.Requests
+                .Include(r => r.RepairItems)
+                .FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException("Request not found");
+
+            if (request.Status != RequestStatus.WaitingForPickUp)
+                throw new ConflictException("Allowed when waiting for pickup");
+
+            if (request.RepairItems.All(r => r.Status == RepairItemStatus.WaitingForPickUp || r.Status == RepairItemStatus.Cancelled || r.Status == RepairItemStatus.PickedUp))
+                request.PickUp();
 
             await context.SaveChangesAsync();
 

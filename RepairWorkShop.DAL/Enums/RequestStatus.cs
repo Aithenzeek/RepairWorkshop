@@ -7,8 +7,8 @@
         InProgress,
         OnHold,
         WaitingForParts,
-        Completed,
         CompletedByTechnician,
+        Completed,
         Cancelled,
         WaitingForPickUp,
         PickedUp

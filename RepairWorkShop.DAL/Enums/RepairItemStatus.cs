@@ -10,6 +10,7 @@
         CompletedByTechnician,
         Completed,
         Cancelled,
-        WaitingForPickUp
+        WaitingForPickUp,
+        PickedUp
     }
 }

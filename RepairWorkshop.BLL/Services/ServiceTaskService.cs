@@ -23,8 +23,9 @@ namespace RepairWorkshop.BLL.Services
 
             if (existingRepairItem.Status == RepairItemStatus.Completed ||
                 existingRepairItem.Status == RepairItemStatus.Cancelled ||
-                existingRepairItem.Status == RepairItemStatus.WaitingForPickUp)
-                throw new ConflictException("Cant add to finished item");
+                existingRepairItem.Status == RepairItemStatus.WaitingForPickUp ||
+                existingRepairItem.Status == RepairItemStatus.PickedUp)
+                throw new ConflictException("Can`t add to finished item");
 
             var existingServiceTask = await context.ServiceTasks.FirstOrDefaultAsync(s => s.ServiceId == dto.ServiceId);
 

@@ -32,6 +32,10 @@ namespace RepairWorkShop.DAL.Entities
         public void Complete()
         {
             Status = RequestStatus.Completed;
+
+            foreach (var item in RepairItems)
+                if (item.Status == RepairItemStatus.Completed)
+                    item.Status = RepairItemStatus.Completed;
         }
 
         public void CompleteByTechnician()
@@ -56,6 +60,15 @@ namespace RepairWorkShop.DAL.Entities
 
             foreach (var item in RepairItems)
                 item.Status = RepairItemStatus.WaitingForPickUp;
+        }
+
+        public void PickUp()
+        {
+            Status = RequestStatus.PickedUp;
+
+            foreach (var item in RepairItems)
+                if (item.Status != RepairItemStatus.Cancelled)
+                    item.Status = RepairItemStatus.PickedUp;
         }
 
         public void Start()
