@@ -43,11 +43,11 @@ namespace RepairWorkshop.BLL.Services
             await context.SaveChangesAsync();
         }
 
-        public async Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto)
+        public async Task<ResponseRolePermission> EditRolePermission(int userRoleId, int permissionId, EditRolePermissionDto dto) // не використовується
         {
             var rolePermission = await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&
-                r.PermissionId == permissionId) ?? throw new NotFoundException("role premission not found");
+                r.PermissionId == permissionId) ?? throw new NotFoundException("Role premission not found");
             
             var existingRolePermission = await context.RolePermissions.FirstOrDefaultAsync(r =>
             r.UserRoleId == dto.UserRoleId &&
@@ -64,7 +64,7 @@ namespace RepairWorkshop.BLL.Services
             return await ReturnDto(rolePermission);
         }
 
-        public async Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId)
+        public async Task<RolePermission?> GetRolePermissionById(int userRoleId, int permissionId) // не використовується
         {
             return await context.RolePermissions
                 .FirstOrDefaultAsync(r => r.UserRoleId == userRoleId &&

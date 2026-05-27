@@ -15,6 +15,7 @@ namespace RepairWorkshop.BLL.Services
             var phone = CheckPhone(dto.Phone);
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
 
             if (existingUser != null && dto.Phone == existingUser.Phone)
@@ -65,6 +66,7 @@ namespace RepairWorkshop.BLL.Services
                 throw new NotFoundException("Customer not found");
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == formattedPhone);
 
             if (existingUser != null && dto.Phone == existingUser.Phone )

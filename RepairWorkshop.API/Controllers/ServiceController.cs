@@ -20,6 +20,15 @@ namespace RepairWorkshop.API.Controllers
             return Ok(services);
         }
 
+        [HttpGet("get-all-active")]
+        [HasPermission("SERVICE_READ")]
+        public async Task<IActionResult> GetAllActiveServices()
+        {
+            var services = await _service.GetAllActiveServices();
+
+            return Ok(services);
+        }
+
         [HttpGet("get-by-id/{id}")]
         [HasPermission("SERVICE_READ")]
         public async Task<IActionResult> GetServiceByPhone(int id)

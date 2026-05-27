@@ -12,5 +12,6 @@ namespace RepairWorkshop.BLL.Interfaces
         public Task<Service?> GetServiceById(int id);
         public Task<ResponseServiceDto> ActivateService(int id);
         public Task<ResponseServiceDto> InactivateService(int id);
+        public Task<List<Service>> GetAllActiveServices();
     }
 }

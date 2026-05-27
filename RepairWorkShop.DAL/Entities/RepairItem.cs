@@ -61,7 +61,11 @@ namespace RepairWorkShop.DAL.Entities
 
         public void Start()
         {
-            if (Status == RepairItemStatus.Draft && CustomerRequest.Status != RequestStatus.Draft && CustomerRequest.Status != RequestStatus.Completed && CustomerRequest.Status != RequestStatus.Cancelled && CustomerRequest.Status != RequestStatus.WaitingForPickUp)
+            if (Status == RepairItemStatus.Draft &&
+                CustomerRequest.Status != RequestStatus.Draft &&
+                CustomerRequest.Status != RequestStatus.Completed &&
+                CustomerRequest.Status != RequestStatus.Cancelled &&
+                CustomerRequest.Status != RequestStatus.WaitingForPickUp)
                 Status = RepairItemStatus.New;
 
             foreach (var task in ServiceTasks)
@@ -74,7 +78,8 @@ namespace RepairWorkShop.DAL.Entities
             ServiceCost = 0;
 
             foreach (var serviceTask in ServiceTasks)
-                ServiceCost += serviceTask.Cost ?? 0;
+                if (serviceTask.Status == ServiceTaskStatus.Completed)
+                    ServiceCost += serviceTask.Cost ?? 0;
         }
     }
 }

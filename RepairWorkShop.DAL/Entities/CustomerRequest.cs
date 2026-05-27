@@ -71,7 +71,8 @@ namespace RepairWorkShop.DAL.Entities
             TotalCost = 0;
 
             foreach (var repairItem in RepairItems)
-                TotalCost += repairItem.ServiceCost ?? 0;
+                if (repairItem.Status == RepairItemStatus.Completed || repairItem.Status == RepairItemStatus.CompletedByTechnician)
+                    TotalCost += repairItem.ServiceCost ?? 0;
         }
     }
 }

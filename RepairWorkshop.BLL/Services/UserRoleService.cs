@@ -22,6 +22,7 @@ namespace RepairWorkshop.BLL.Services
             };
 
             await context.UserRoles.AddAsync(userRole);
+
             await context.SaveChangesAsync();
 
             return await ReturnDto(userRole);
@@ -35,11 +36,12 @@ namespace RepairWorkshop.BLL.Services
                 throw new ConflictException("Cant delete with existing users");
 
             context.UserRoles.Remove(userRole);
+
             await context.SaveChangesAsync();
         }
 
         public async Task<ResponseUserRoleDto> EditUserRole(int id, EditUserRoleDto dto)
-        {
+            {
             var userRole = await context.UserRoles.FindAsync(id) ?? throw new NotFoundException("User role not found");
             
             userRole.Name = dto.Name;
@@ -56,7 +58,7 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<UserRole?> GetUserRoleById(int id)
+        public async Task<UserRole?> GetUserRoleById(int id) // не використовується
         {
             return await context.UserRoles
                 .AsNoTracking()

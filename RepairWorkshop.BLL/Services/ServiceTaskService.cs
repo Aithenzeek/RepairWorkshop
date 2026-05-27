@@ -78,16 +78,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> StartServiceTask(int id, int technicianId)
         {
-            var request = await context.Requests
-                .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.User)
-                 .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.Service)
-                .FirstOrDefaultAsync(r => r.RepairItems
-                .Any(i => i.ServiceTasks
-                .Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
+            var request = await GetRequest(id);
 
             var serviceTask = request.RepairItems
                 .SelectMany(s => s.ServiceTasks)
@@ -100,7 +91,7 @@ namespace RepairWorkshop.BLL.Services
                 serviceTask.Status != ServiceTaskStatus.OnHold &&
                 serviceTask.Status != ServiceTaskStatus.InProgress &&
                 serviceTask.Status != ServiceTaskStatus.WaitingForParts)
-                throw new ConflictException("Service task must be new, on hold or wait for parts");
+                throw new ConflictException("Service task must be started");
 
             serviceTask.Status = ServiceTaskStatus.InProgress;
 
@@ -127,16 +118,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> CompleteServiceTask(CompleteServiceTaskDto dto, int technicianId)
         {
-            var request = await context.Requests
-                .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.User)
-                 .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.Service)
-                .FirstOrDefaultAsync(r => r.RepairItems
-                .Any(i => i.ServiceTasks
-                .Any(t => t.Id == dto.Id))) ?? throw new NotFoundException("Request not found");
+            var request = await GetRequest(dto.Id);
 
             var serviceTask = request.RepairItems
                 .SelectMany(s => s.ServiceTasks)
@@ -191,16 +173,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> CancelServiceTask(int id, int technicianId, CancelServiceTaskDto dto)
         {
-            var request = await context.Requests
-               .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.User)
-                 .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.Service)
-                .FirstOrDefaultAsync(r => r.RepairItems
-                .Any(i => i.ServiceTasks
-                .Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
+            var request = await GetRequest(id);
 
             var serviceTask = request.RepairItems
                 .SelectMany(s => s.ServiceTasks)
@@ -232,16 +205,7 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> SetOnHoldServiceTask(int id, int technicianId)
         {
-            var request = await context.Requests
-               .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.User)
-                 .Include(r => r.RepairItems)
-                    .ThenInclude(i => i.ServiceTasks)
-                        .ThenInclude(s => s.Service)
-                .FirstOrDefaultAsync(r => r.RepairItems
-                .Any(i => i.ServiceTasks
-                .Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
+            var request = await GetRequest(id);
 
             var serviceTask = request.RepairItems
                 .SelectMany(s => s.ServiceTasks)
@@ -253,11 +217,10 @@ namespace RepairWorkshop.BLL.Services
             if (serviceTask.Status != ServiceTaskStatus.InProgress &&
                 serviceTask.Status != ServiceTaskStatus.WaitingForParts &&
                 serviceTask.Status != ServiceTaskStatus.OnHold)
-                throw new ConflictException("Only in progress");
+                throw new ConflictException("Only in progress, waiting for parts or on hold");
 
             if (serviceTask.Status == ServiceTaskStatus.Draft &&
                 serviceTask.Status == ServiceTaskStatus.New &&
-                serviceTask.Status == ServiceTaskStatus.WaitingForParts &&
                 serviceTask.Status == ServiceTaskStatus.Cancelled &&
                 serviceTask.Status == ServiceTaskStatus.Completed
                 )
@@ -368,18 +331,27 @@ namespace RepairWorkshop.BLL.Services
 
         public async Task<ResponseServiceTaskDto> EditServiceTask(int id, EditServiceTaskDto dto)
         {
-            var serviceTask = await context.ServiceTasks
-                .Include(s => s.User)
-                .Include(s => s.Service)
-                .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
+            var repairItem = await context.RepairItems
+                .Include(r => r.ServiceTasks)
+                    .ThenInclude(r => r.User)
+                .Include(r => r.ServiceTasks)
+                    .ThenInclude(r => r.Service)
+                .FirstOrDefaultAsync(r => r.ServiceTasks.Any(s => s.Id == id)) ?? throw new NotFoundException("Repair item not found");
+
+            var serviceTask = repairItem.ServiceTasks.FirstOrDefault(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
 
             var service = await context.Services.FindAsync(dto.ServiceId) ?? throw new NotFoundException("Service not found");
 
+            var existingServiceTask = await context.ServiceTasks.FirstOrDefaultAsync(r => r.ServiceId == dto.ServiceId);
+
             if (serviceTask.Service.Status == ServiceStatus.Active && service.Status == ServiceStatus.Inactive)
-                throw new ConflictException("Can`t add inactive service");
+                throw new ConflictException("Can`t set inactive service");
 
             if (serviceTask.Status != ServiceTaskStatus.Draft)
                 throw new ConflictException("Can be edit only in draft");
+
+            if (serviceTask != null && existingServiceTask != null && dto.ServiceId == existingServiceTask.ServiceId)
+                throw new ConflictException("Task with same service exists");
 
             serviceTask.UserId = dto.UserId;
             serviceTask.ServiceId = dto.ServiceId;
@@ -403,7 +375,7 @@ namespace RepairWorkshop.BLL.Services
                 .FirstOrDefaultAsync(s => s.Id == id) ?? throw new NotFoundException("Service task not found");
         }
 
-        public async Task<List<ServiceTask>> GetAllServiceTasks()
+        public async Task<List<ServiceTask>> GetAllServiceTasks() // не використовується
         {
             return await context.ServiceTasks
                 .AsNoTracking()
@@ -412,7 +384,7 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<List<ServiceTask>> GetAllActiveServiceTasks(int userId, bool activeOnly)
+        public async Task<List<ServiceTask>> GetAllActiveServiceTasks(int userId, bool activeOnly) // не використовується
         {
             var serviceTasks = context.ServiceTasks.Where(t => t.UserId == userId);
 
@@ -565,6 +537,20 @@ namespace RepairWorkshop.BLL.Services
                 Page = page,
                 PageSize = pageSize
             };
+        }
+
+        private async Task<CustomerRequest> GetRequest(int id)
+        {
+            return await context.Requests
+                .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.User)
+                 .Include(r => r.RepairItems)
+                    .ThenInclude(i => i.ServiceTasks)
+                        .ThenInclude(s => s.Service)
+                .FirstOrDefaultAsync(r => r.RepairItems
+                .Any(i => i.ServiceTasks
+                .Any(t => t.Id == id))) ?? throw new NotFoundException("Request not found");
         }
     }
 }

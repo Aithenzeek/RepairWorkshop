@@ -13,6 +13,7 @@ namespace RepairWorkshop.BLL.Services
         public async Task<ResponseUserDto> CreateUser(CreateUserDto dto)
         {
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
             if (existingUser != null && dto.Phone == existingUser.Phone)
@@ -33,6 +34,7 @@ namespace RepairWorkshop.BLL.Services
             };
 
             await context.Users.AddAsync(user);
+
             await context.SaveChangesAsync();
 
             return await ReturnDto(user);
@@ -62,6 +64,7 @@ namespace RepairWorkshop.BLL.Services
                 .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
 
             var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Phone == dto.Phone);
+
             var existingCustomer = await context.Customers.FirstOrDefaultAsync(c => c.Phone == dto.Phone);
 
             if (existingUser != null && dto.Phone == existingUser.Phone && id != existingUser.Id)
@@ -86,10 +89,14 @@ namespace RepairWorkshop.BLL.Services
 
             await context.SaveChangesAsync();
 
+            user = await context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException("User not found");
+
             return await ReturnDto(user);
         }
 
-        public async Task<List<User>> GetAllUsers()
+        public async Task<List<User>> GetAllUsers() // не використовується
         {
             return await context.Users
                 .AsNoTracking()
@@ -97,7 +104,7 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<List<User>> GetAllTechnicians()
+        public async Task<List<User>> GetAllTechnicians() // не використовується
         {
             return await context.Users
                 .AsNoTracking()
@@ -106,7 +113,7 @@ namespace RepairWorkshop.BLL.Services
                 .ToListAsync();
         }
 
-        public async Task<User?> GetUserById(int id)
+        public async Task<User?> GetUserById(int id) // не використовується
         {
             return await context.Users
                 .AsNoTracking()
